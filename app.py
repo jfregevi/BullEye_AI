@@ -1,495 +1,514 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import json
 import io
 
-# Page configuration
+# Configuration de la page
 st.set_page_config(
-    page_title="Investment Assistant",
+    page_title="Assistant Investissement",
     page_icon="💰",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Investment profiles configuration
-INVESTMENT_PROFILES = {
+# Configuration des profils d'investissement
+PROFILS_INVESTISSEMENT = {
     "Prudent": {
-        "risk_tolerance": 0.3,
-        "rebalance_threshold": 0.15,
-        "max_single_asset": 0.40,
-        "preferred_allocation": {"BTC": 0.20, "ETH": 0.15, "S&P500": 0.45, "Bonds": 0.20}
+        "tolerance_risque": 0.3,
+        "seuil_reequilibrage": 0.15,
+        "max_actif_unique": 0.40,
+        "allocation_preferee": {"BTC": 0.20, "ETH": 0.15, "S&P500": 0.45, "Obligations": 0.20}
     },
-    "Balanced": {
-        "risk_tolerance": 0.5,
-        "rebalance_threshold": 0.20,
-        "max_single_asset": 0.50,
-        "preferred_allocation": {"BTC": 0.30, "ETH": 0.20, "S&P500": 0.35, "Tesla": 0.15}
+    "Équilibré": {
+        "tolerance_risque": 0.5,
+        "seuil_reequilibrage": 0.20,
+        "max_actif_unique": 0.50,
+        "allocation_preferee": {"BTC": 0.30, "ETH": 0.20, "S&P500": 0.35, "Tesla": 0.15}
     },
-    "Aggressive": {
-        "risk_tolerance": 0.8,
-        "rebalance_threshold": 0.25,
-        "max_single_asset": 0.60,
-        "preferred_allocation": {"BTC": 0.40, "ETH": 0.25, "Tesla": 0.20, "S&P500": 0.15}
+    "Agressif": {
+        "tolerance_risque": 0.8,
+        "seuil_reequilibrage": 0.25,
+        "max_actif_unique": 0.60,
+        "allocation_preferee": {"BTC": 0.40, "ETH": 0.25, "Tesla": 0.20, "S&P500": 0.15}
     }
 }
 
-# Sample market data (in production, this would come from APIs)
-SAMPLE_PRICES = {
-    "BTC": {"current": 45000, "history": np.random.normal(45000, 5000, 252).tolist()},
-    "ETH": {"current": 3000, "history": np.random.normal(3000, 400, 252).tolist()},
-    "S&P500": {"current": 4500, "history": np.random.normal(4500, 200, 252).tolist()},
-    "Tesla": {"current": 250, "history": np.random.normal(250, 30, 252).tolist()},
-    "Bonds": {"current": 100, "history": np.random.normal(100, 5, 252).tolist()}
+# Données de marché simulées
+PRIX_ECHANTILLON = {
+    "BTC": {"actuel": 45000, "historique": np.random.normal(45000, 5000, 252).tolist()},
+    "ETH": {"actuel": 3000, "historique": np.random.normal(3000, 400, 252).tolist()},
+    "S&P500": {"actuel": 4500, "historique": np.random.normal(4500, 200, 252).tolist()},
+    "Tesla": {"actuel": 250, "historique": np.random.normal(250, 30, 252).tolist()},
+    "Obligations": {"actuel": 100, "historique": np.random.normal(100, 5, 252).tolist()}
 }
 
-# AI signals (simulated)
-AI_SIGNALS = {
-    "BTC": {"sentiment": "Bullish", "strength": 0.8, "reason": "Strong institutional adoption"},
-    "ETH": {"sentiment": "Neutral", "strength": 0.5, "reason": "Awaiting major upgrades"},
-    "S&P500": {"sentiment": "Bullish", "strength": 0.6, "reason": "Economic recovery indicators"},
-    "Tesla": {"sentiment": "Bearish", "strength": -0.3, "reason": "Competition concerns"},
-    "Bonds": {"sentiment": "Neutral", "strength": 0.1, "reason": "Stable interest rates"}
+# Signaux IA (simulés)
+SIGNAUX_IA = {
+    "BTC": {"sentiment": "Haussier", "force": 0.8, "raison": "Adoption institutionnelle forte"},
+    "ETH": {"sentiment": "Neutre", "force": 0.5, "raison": "En attente de mises à jour majeures"},
+    "S&P500": {"sentiment": "Haussier", "force": 0.6, "raison": "Indicateurs de reprise économique"},
+    "Tesla": {"sentiment": "Baissier", "force": -0.3, "raison": "Préoccupations concurrentielles"},
+    "Obligations": {"sentiment": "Neutre", "force": 0.1, "raison": "Taux d'intérêt stables"}
 }
 
-class PortfolioManager:
+class GestionnairePortefeuille:
     def __init__(self):
-        if 'portfolio' not in st.session_state:
-            st.session_state.portfolio = {}
-        if 'investment_history' not in st.session_state:
-            st.session_state.investment_history = []
+        if 'portefeuille' not in st.session_state:
+            st.session_state.portefeuille = {}
+        if 'historique_investissements' not in st.session_state:
+            st.session_state.historique_investissements = []
     
-    def add_position(self, asset, amount, price):
-        if asset in st.session_state.portfolio:
-            current_value = st.session_state.portfolio[asset]['shares'] * st.session_state.portfolio[asset]['avg_price']
-            new_shares = amount / price
-            total_shares = st.session_state.portfolio[asset]['shares'] + new_shares
-            new_avg_price = (current_value + amount) / total_shares
-            st.session_state.portfolio[asset] = {'shares': total_shares, 'avg_price': new_avg_price}
+    def ajouter_position(self, actif, montant, prix):
+        if actif in st.session_state.portefeuille:
+            valeur_actuelle = st.session_state.portefeuille[actif]['parts'] * st.session_state.portefeuille[actif]['prix_moyen']
+            nouvelles_parts = montant / prix
+            total_parts = st.session_state.portefeuille[actif]['parts'] + nouvelles_parts
+            nouveau_prix_moyen = (valeur_actuelle + montant) / total_parts
+            st.session_state.portefeuille[actif] = {'parts': total_parts, 'prix_moyen': nouveau_prix_moyen}
         else:
-            st.session_state.portfolio[asset] = {'shares': amount / price, 'avg_price': price}
+            st.session_state.portefeuille[actif] = {'parts': montant / prix, 'prix_moyen': prix}
     
-    def get_portfolio_value(self):
-        total_value = 0
-        for asset, position in st.session_state.portfolio.items():
-            if asset in SAMPLE_PRICES:
-                total_value += position['shares'] * SAMPLE_PRICES[asset]['current']
-        return total_value
+    def obtenir_valeur_portefeuille(self):
+        valeur_totale = 0
+        for actif, position in st.session_state.portefeuille.items():
+            if actif in PRIX_ECHANTILLON:
+                valeur_totale += position['parts'] * PRIX_ECHANTILLON[actif]['actuel']
+        return valeur_totale
     
-    def get_portfolio_allocation(self):
-        total_value = self.get_portfolio_value()
-        if total_value == 0:
+    def obtenir_allocation_portefeuille(self):
+        valeur_totale = self.obtenir_valeur_portefeuille()
+        if valeur_totale == 0:
             return {}
         
         allocation = {}
-        for asset, position in st.session_state.portfolio.items():
-            if asset in SAMPLE_PRICES:
-                value = position['shares'] * SAMPLE_PRICES[asset]['current']
-                allocation[asset] = value / total_value
+        for actif, position in st.session_state.portefeuille.items():
+            if actif in PRIX_ECHANTILLON:
+                valeur = position['parts'] * PRIX_ECHANTILLON[actif]['actuel']
+                allocation[actif] = valeur / valeur_totale
         return allocation
 
-def create_portfolio_chart(portfolio_manager):
-    allocation = portfolio_manager.get_portfolio_allocation()
+def creer_graphique_portefeuille(gestionnaire_portefeuille):
+    allocation = gestionnaire_portefeuille.obtenir_allocation_portefeuille()
     if not allocation:
-        return go.Figure().add_annotation(text="No portfolio data", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False)
+        st.info("Aucune donnée de portefeuille disponible")
+        return
     
-    fig = px.pie(
-        values=list(allocation.values()),
-        names=list(allocation.keys()),
-        title="Current Portfolio Allocation"
+    # Créer un graphique en secteurs avec matplotlib
+    fig, ax = plt.subplots(figsize=(10, 6))
+    colors = plt.cm.Set3(np.linspace(0, 1, len(allocation)))
+    
+    wedges, texts, autotexts = ax.pie(
+        allocation.values(),
+        labels=allocation.keys(),
+        autopct='%1.1f%%',
+        colors=colors,
+        startangle=90
     )
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-    return fig
+    
+    ax.set_title("Allocation Actuelle du Portefeuille", fontsize=16, fontweight='bold')
+    
+    # Améliorer la lisibilité
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+    
+    st.pyplot(fig)
 
-def create_performance_chart():
-    # Generate sample performance data
+def creer_graphique_performance():
+    # Générer des données de performance simulées
     dates = pd.date_range(start=datetime.now() - timedelta(days=252), end=datetime.now(), freq='D')
-    portfolio_values = np.cumsum(np.random.normal(0, 50, len(dates))) + 10000
+    valeurs_portefeuille = np.cumsum(np.random.normal(0, 50, len(dates))) + 10000
     
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=dates,
-        y=portfolio_values,
-        mode='lines',
-        name='Portfolio Value',
-        line=dict(color='#1f77b4', width=2)
-    ))
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(dates, valeurs_portefeuille, linewidth=2, color='#1f77b4')
+    ax.set_title("Performance du Portefeuille dans le Temps", fontsize=16, fontweight='bold')
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Valeur du Portefeuille (€)")
+    ax.grid(True, alpha=0.3)
     
-    fig.update_layout(
-        title="Portfolio Performance Over Time",
-        xaxis_title="Date",
-        yaxis_title="Portfolio Value (€)",
-        hovermode='x unified'
-    )
-    return fig
+    # Rotation des dates pour une meilleure lisibilité
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    
+    st.pyplot(fig)
 
-def simulate_dca(amount, period, months, use_ai=False):
-    """Simulate DCA strategy with optional AI enhancement"""
-    periods_per_month = {"weekly": 4, "monthly": 1, "quarterly": 0.33}
-    investments_per_month = periods_per_month[period]
-    amount_per_investment = amount / investments_per_month
+def simuler_dca(montant, periode, mois, utiliser_ia=False):
+    """Simuler la stratégie DCA avec amélioration IA optionnelle"""
+    periodes_par_mois = {"hebdomadaire": 4, "mensuelle": 1, "trimestrielle": 0.33}
+    investissements_par_mois = periodes_par_mois[periode]
+    montant_par_investissement = montant / investissements_par_mois
     
-    results = []
-    total_invested = 0
-    total_shares = 0
+    resultats = []
+    total_investi = 0
+    total_parts = 0
     
-    for month in range(months):
-        investments_this_month = int(investments_per_month) if period != "quarterly" else (1 if month % 3 == 0 else 0)
+    for mois_num in range(mois):
+        investissements_ce_mois = int(investissements_par_mois) if periode != "trimestrielle" else (1 if mois_num % 3 == 0 else 0)
         
-        for _ in range(investments_this_month):
-            # Simulate price (in production, use real historical data)
-            price = 45000 + np.random.normal(0, 2000)  # BTC example
+        for _ in range(investissements_ce_mois):
+            # Simuler le prix (en production, utiliser des données historiques réelles)
+            prix = 45000 + np.random.normal(0, 2000)  # Exemple BTC
             
-            if use_ai:
-                # AI adjustment based on sentiment
-                ai_multiplier = 1 + (AI_SIGNALS["BTC"]["strength"] * 0.2)
-                investment_amount = amount_per_investment * ai_multiplier
+            if utiliser_ia:
+                # Ajustement IA basé sur le sentiment
+                multiplicateur_ia = 1 + (SIGNAUX_IA["BTC"]["force"] * 0.2)
+                montant_investissement = montant_par_investissement * multiplicateur_ia
             else:
-                investment_amount = amount_per_investment
+                montant_investissement = montant_par_investissement
             
-            shares_bought = investment_amount / price
-            total_invested += investment_amount
-            total_shares += shares_bought
+            parts_achetees = montant_investissement / prix
+            total_investi += montant_investissement
+            total_parts += parts_achetees
             
-            results.append({
-                "month": month,
-                "price": price,
-                "invested": investment_amount,
-                "shares": shares_bought,
-                "total_value": total_shares * price
+            resultats.append({
+                "mois": mois_num,
+                "prix": prix,
+                "investi": montant_investissement,
+                "parts": parts_achetees,
+                "valeur_totale": total_parts * prix
             })
     
-    return pd.DataFrame(results)
+    return pd.DataFrame(resultats)
 
-def generate_allocation_suggestion(profile, dca_amount):
-    """Generate AI-powered allocation suggestion"""
-    base_allocation = INVESTMENT_PROFILES[profile]["preferred_allocation"]
+def generer_suggestion_allocation(profil, montant_dca):
+    """Générer une suggestion d'allocation alimentée par l'IA"""
+    allocation_base = PROFILS_INVESTISSEMENT[profil]["allocation_preferee"]
     suggestions = {}
     
-    for asset, base_weight in base_allocation.items():
-        if asset in AI_SIGNALS:
-            # Adjust based on AI signal
-            ai_adjustment = AI_SIGNALS[asset]["strength"] * 0.1
-            adjusted_weight = max(0.05, min(0.6, base_weight + ai_adjustment))
-            suggestions[asset] = {
-                "amount": round(dca_amount * adjusted_weight, 2),
-                "weight": adjusted_weight,
-                "reason": AI_SIGNALS[asset]["reason"]
+    for actif, poids_base in allocation_base.items():
+        if actif in SIGNAUX_IA:
+            # Ajuster selon le signal IA
+            ajustement_ia = SIGNAUX_IA[actif]["force"] * 0.1
+            poids_ajuste = max(0.05, min(0.6, poids_base + ajustement_ia))
+            suggestions[actif] = {
+                "montant": round(montant_dca * poids_ajuste, 2),
+                "poids": poids_ajuste,
+                "raison": SIGNAUX_IA[actif]["raison"]
             }
     
-    # Normalize weights to sum to 1
-    total_weight = sum(s["weight"] for s in suggestions.values())
-    for asset in suggestions:
-        suggestions[asset]["weight"] /= total_weight
-        suggestions[asset]["amount"] = round(dca_amount * suggestions[asset]["weight"], 2)
+    # Normaliser les poids pour qu'ils somment à 1
+    poids_total = sum(s["poids"] for s in suggestions.values())
+    for actif in suggestions:
+        suggestions[actif]["poids"] /= poids_total
+        suggestions[actif]["montant"] = round(montant_dca * suggestions[actif]["poids"], 2)
     
     return suggestions
 
-def create_alerts():
-    """Generate investment alerts based on AI signals and portfolio"""
-    alerts = []
+def creer_alertes():
+    """Générer des alertes d'investissement basées sur les signaux IA et le portefeuille"""
+    alertes = []
     
-    for asset, signal in AI_SIGNALS.items():
-        if abs(signal["strength"]) > 0.6:  # Strong signal
-            alert_type = "Opportunity" if signal["strength"] > 0 else "Warning"
-            alerts.append({
-                "type": alert_type,
-                "asset": asset,
-                "message": f"{asset} shows {signal['sentiment']} signal: {signal['reason']}",
-                "strength": abs(signal["strength"])
+    for actif, signal in SIGNAUX_IA.items():
+        if abs(signal["force"]) > 0.6:  # Signal fort
+            type_alerte = "Opportunité" if signal["force"] > 0 else "Avertissement"
+            alertes.append({
+                "type": type_alerte,
+                "actif": actif,
+                "message": f"{actif} montre un signal {signal['sentiment']} : {signal['raison']}",
+                "force": abs(signal["force"])
             })
     
-    return sorted(alerts, key=lambda x: x["strength"], reverse=True)
+    return sorted(alertes, key=lambda x: x["force"], reverse=True)
 
-def chatbot_response(question, portfolio_manager):
-    """Simple chatbot responses based on keywords"""
-    question_lower = question.lower()
+def reponse_chatbot(question, gestionnaire_portefeuille):
+    """Réponses simples du chatbot basées sur des mots-clés"""
+    question_min = question.lower()
     
-    if "why reinforce" in question_lower or "why invest" in question_lower:
-        asset = None
+    if "pourquoi renforcer" in question_min or "pourquoi investir" in question_min:
+        actif = None
         for a in ["btc", "eth", "tesla", "s&p500"]:
-            if a in question_lower:
-                asset = a.upper()
-                if asset == "S&P500":
-                    asset = "S&P500"
+            if a in question_min:
+                actif = a.upper()
+                if actif == "S&P500":
+                    actif = "S&P500"
                 break
         
-        if asset and asset in AI_SIGNALS:
-            signal = AI_SIGNALS[asset]
-            return f"Based on AI analysis, {asset} shows a {signal['sentiment']} signal with strength {signal['strength']:.1f}. Reason: {signal['reason']}"
+        if actif and actif in SIGNAUX_IA:
+            signal = SIGNAUX_IA[actif]
+            return f"Selon l'analyse IA, {actif} montre un signal {signal['sentiment']} avec une force de {signal['force']:.1f}. Raison : {signal['raison']}"
     
-    elif "return" in question_lower or "performance" in question_lower:
-        # Calculate mock return
-        mock_return = np.random.uniform(-5, 15)
-        return f"Your portfolio has generated a {mock_return:.1f}% return over the analyzed period. This is {'above' if mock_return > 5 else 'below'} market average."
+    elif "rendement" in question_min or "performance" in question_min:
+        # Calculer un rendement fictif
+        rendement_fictif = np.random.uniform(-5, 15)
+        return f"Votre portefeuille a généré un rendement de {rendement_fictif:.1f}% sur la période analysée. C'est {'au-dessus' if rendement_fictif > 5 else 'en dessous'} de la moyenne du marché."
     
-    elif "new asset" in question_lower or "interesting" in question_lower:
-        return "Based on current market analysis, consider diversifying into emerging markets ETFs or renewable energy stocks. Always ensure this aligns with your risk profile."
+    elif "nouvel actif" in question_min or "intéressant" in question_min:
+        return "Selon l'analyse actuelle du marché, considérez la diversification dans les ETF de marchés émergents ou les actions d'énergie renouvelable. Assurez-vous toujours que cela correspond à votre profil de risque."
     
-    elif "allocation" in question_lower:
-        total_value = portfolio_manager.get_portfolio_value()
-        return f"Your current portfolio value is €{total_value:,.2f}. Based on your profile, consider rebalancing if any single asset exceeds your risk limits."
+    elif "allocation" in question_min:
+        valeur_totale = gestionnaire_portefeuille.obtenir_valeur_portefeuille()
+        return f"La valeur actuelle de votre portefeuille est de {valeur_totale:,.2f}€. Selon votre profil, envisagez un rééquilibrage si un seul actif dépasse vos limites de risque."
     
     else:
-        return "I can help you with portfolio analysis, investment suggestions, and performance tracking. Try asking about specific assets, returns, or allocation advice!"
+        return "Je peux vous aider avec l'analyse de portefeuille, les suggestions d'investissement et le suivi des performances. Essayez de poser des questions sur des actifs spécifiques, les rendements ou les conseils d'allocation !"
 
 def main():
-    st.title("💰 AI-Powered Investment Assistant")
+    st.title("💰 Assistant Investissement Alimenté par l'IA")
     st.markdown("---")
     
-    # Initialize portfolio manager
-    portfolio_manager = PortfolioManager()
+    # Initialiser le gestionnaire de portefeuille
+    gestionnaire_portefeuille = GestionnairePortefeuille()
     
-    # Sidebar configuration
+    # Configuration de la barre latérale
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-        # Investment Profile
-        profile = st.selectbox(
-            "Investment Profile",
-            ["Prudent", "Balanced", "Aggressive"],
-            help="Choose your risk tolerance level"
+        # Profil d'investissement
+        profil = st.selectbox(
+            "Profil d'Investissement",
+            ["Prudent", "Équilibré", "Agressif"],
+            help="Choisissez votre niveau de tolérance au risque"
         )
         
-        # DCA Settings
-        st.subheader("DCA Settings")
-        dca_amount = st.number_input("Monthly DCA Amount (€)", min_value=50, max_value=10000, value=200, step=50)
-        dca_period = st.selectbox("DCA Frequency", ["weekly", "monthly", "quarterly"])
+        # Paramètres DCA
+        st.subheader("Paramètres DCA")
+        montant_dca = st.number_input("Montant DCA Mensuel (€)", min_value=50, max_value=10000, value=200, step=50)
+        periode_dca = st.selectbox("Fréquence DCA", ["hebdomadaire", "mensuelle", "trimestrielle"])
         
-        # Available Assets
-        st.subheader("Available Assets")
-        available_assets = list(SAMPLE_PRICES.keys())
-        selected_assets = st.multiselect(
-            "Select assets to track",
-            available_assets,
-            default=list(INVESTMENT_PROFILES[profile]["preferred_allocation"].keys())
+        # Actifs disponibles
+        st.subheader("Actifs Disponibles")
+        actifs_disponibles = list(PRIX_ECHANTILLON.keys())
+        actifs_selectionnes = st.multiselect(
+            "Sélectionner les actifs à suivre",
+            actifs_disponibles,
+            default=list(PROFILS_INVESTISSEMENT[profil]["allocation_preferee"].keys())
         )
     
-    # Main tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Portfolio", "📈 DCA Simulation", "🚨 Alerts", "🤖 AI Chatbot"])
+    # Onglets principaux
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Portefeuille", "📈 Simulation DCA", "🚨 Alertes", "🤖 Chatbot IA"])
     
     with tab1:
-        st.header("Portfolio Overview")
+        st.header("Aperçu du Portefeuille")
         
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            # Portfolio input section
-            st.subheader("Add Position")
-            with st.form("add_position"):
-                pos_asset = st.selectbox("Asset", selected_assets)
-                pos_amount = st.number_input("Amount Invested (€)", min_value=0.0, step=10.0)
-                pos_price = st.number_input("Purchase Price", min_value=0.0, value=float(SAMPLE_PRICES.get(pos_asset, {}).get('current', 0)))
+            # Section de saisie du portefeuille
+            st.subheader("Ajouter une Position")
+            with st.form("ajouter_position"):
+                pos_actif = st.selectbox("Actif", actifs_selectionnes)
+                pos_montant = st.number_input("Montant Investi (€)", min_value=0.0, step=10.0)
+                pos_prix = st.number_input("Prix d'Achat", min_value=0.0, value=float(PRIX_ECHANTILLON.get(pos_actif, {}).get('actuel', 0)))
                 
-                if st.form_submit_button("Add Position"):
-                    if pos_amount > 0 and pos_price > 0:
-                        portfolio_manager.add_position(pos_asset, pos_amount, pos_price)
-                        st.success(f"Added {pos_asset} position!")
+                if st.form_submit_button("Ajouter Position"):
+                    if pos_montant > 0 and pos_prix > 0:
+                        gestionnaire_portefeuille.ajouter_position(pos_actif, pos_montant, pos_prix)
+                        st.success(f"Position {pos_actif} ajoutée !")
                         st.rerun()
             
-            # CSV Upload
-            st.subheader("Upload Portfolio CSV")
-            uploaded_file = st.file_uploader("Choose CSV file", type="csv")
-            if uploaded_file is not None:
+            # Upload CSV
+            st.subheader("Télécharger Portefeuille CSV")
+            fichier_telecharge = st.file_uploader("Choisir le fichier CSV", type="csv")
+            if fichier_telecharge is not None:
                 try:
-                    df = pd.read_csv(uploaded_file)
-                    st.write("Preview:", df.head())
-                    if st.button("Import Portfolio"):
+                    df = pd.read_csv(fichier_telecharge)
+                    st.write("Aperçu :", df.head())
+                    if st.button("Importer Portefeuille"):
                         for _, row in df.iterrows():
-                            if all(col in df.columns for col in ['asset', 'amount', 'price']):
-                                portfolio_manager.add_position(row['asset'], row['amount'], row['price'])
-                        st.success("Portfolio imported successfully!")
+                            if all(col in df.columns for col in ['actif', 'montant', 'prix']):
+                                gestionnaire_portefeuille.ajouter_position(row['actif'], row['montant'], row['prix'])
+                        st.success("Portefeuille importé avec succès !")
                         st.rerun()
                 except Exception as e:
-                    st.error(f"Error reading CSV: {str(e)}")
+                    st.error(f"Erreur de lecture CSV : {str(e)}")
         
         with col2:
-            # Portfolio metrics
-            total_value = portfolio_manager.get_portfolio_value()
-            st.metric("Total Portfolio Value", f"€{total_value:,.2f}")
+            # Métriques du portefeuille
+            valeur_totale = gestionnaire_portefeuille.obtenir_valeur_portefeuille()
+            st.metric("Valeur Totale du Portefeuille", f"{valeur_totale:,.2f}€")
             
-            if st.session_state.portfolio:
-                total_invested = sum(pos['shares'] * pos['avg_price'] for pos in st.session_state.portfolio.values())
-                pnl = total_value - total_invested
-                pnl_pct = (pnl / total_invested * 100) if total_invested > 0 else 0
-                st.metric("P&L", f"€{pnl:,.2f}", f"{pnl_pct:+.1f}%")
+            if st.session_state.portefeuille:
+                total_investi = sum(pos['parts'] * pos['prix_moyen'] for pos in st.session_state.portefeuille.values())
+                pnl = valeur_totale - total_investi
+                pnl_pct = (pnl / total_investi * 100) if total_investi > 0 else 0
+                st.metric("P&L", f"{pnl:,.2f}€", f"{pnl_pct:+.1f}%")
         
-        # Portfolio visualization
-        if st.session_state.portfolio:
+        # Visualisation du portefeuille
+        if st.session_state.portefeuille:
             col1, col2 = st.columns(2)
             with col1:
-                st.plotly_chart(create_portfolio_chart(portfolio_manager), use_container_width=True)
+                st.subheader("Allocation du Portefeuille")
+                creer_graphique_portefeuille(gestionnaire_portefeuille)
             with col2:
-                st.plotly_chart(create_performance_chart(), use_container_width=True)
+                st.subheader("Performance Historique")
+                creer_graphique_performance()
             
-            # Portfolio table
-            st.subheader("Position Details")
-            portfolio_data = []
-            for asset, position in st.session_state.portfolio.items():
-                if asset in SAMPLE_PRICES:
-                    current_price = SAMPLE_PRICES[asset]['current']
-                    current_value = position['shares'] * current_price
-                    pnl = current_value - (position['shares'] * position['avg_price'])
-                    portfolio_data.append({
-                        'Asset': asset,
-                        'Shares': f"{position['shares']:.4f}",
-                        'Avg Price': f"€{position['avg_price']:.2f}",
-                        'Current Price': f"€{current_price:.2f}",
-                        'Current Value': f"€{current_value:.2f}",
-                        'P&L': f"€{pnl:.2f}"
+            # Tableau du portefeuille
+            st.subheader("Détails des Positions")
+            donnees_portefeuille = []
+            for actif, position in st.session_state.portefeuille.items():
+                if actif in PRIX_ECHANTILLON:
+                    prix_actuel = PRIX_ECHANTILLON[actif]['actuel']
+                    valeur_actuelle = position['parts'] * prix_actuel
+                    pnl = valeur_actuelle - (position['parts'] * position['prix_moyen'])
+                    donnees_portefeuille.append({
+                        'Actif': actif,
+                        'Parts': f"{position['parts']:.4f}",
+                        'Prix Moyen': f"{position['prix_moyen']:.2f}€",
+                        'Prix Actuel': f"{prix_actuel:.2f}€",
+                        'Valeur Actuelle': f"{valeur_actuelle:.2f}€",
+                        'P&L': f"{pnl:.2f}€"
                     })
             
-            if portfolio_data:
-                st.dataframe(pd.DataFrame(portfolio_data), use_container_width=True)
+            if donnees_portefeuille:
+                st.dataframe(pd.DataFrame(donnees_portefeuille), use_container_width=True)
     
     with tab2:
-        st.header("DCA Simulation")
+        st.header("Simulation DCA")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Simulation Parameters")
-            sim_months = st.slider("Simulation Period (months)", 6, 60, 12)
-            comparison_amounts = st.multiselect(
-                "Compare DCA amounts (€)",
+            st.subheader("Paramètres de Simulation")
+            sim_mois = st.slider("Période de Simulation (mois)", 6, 60, 12)
+            montants_comparaison = st.multiselect(
+                "Comparer les montants DCA (€)",
                 [100, 200, 300, 500, 1000],
                 default=[200, 400]
             )
         
         with col2:
-            st.subheader("AI Enhancement")
-            use_ai = st.checkbox("Enable AI-enhanced DCA", value=True)
-            st.info("AI enhancement adjusts investment amounts based on market sentiment and technical indicators.")
+            st.subheader("Amélioration IA")
+            utiliser_ia = st.checkbox("Activer le DCA amélioré par IA", value=True)
+            st.info("L'amélioration IA ajuste les montants d'investissement selon le sentiment du marché et les indicateurs techniques.")
         
-        if st.button("Run Simulation"):
-            results = {}
-            for amount in comparison_amounts:
-                results[f"€{amount} Standard"] = simulate_dca(amount, dca_period, sim_months, False)
-                if use_ai:
-                    results[f"€{amount} AI-Enhanced"] = simulate_dca(amount, dca_period, sim_months, True)
+        if st.button("Lancer la Simulation"):
+            resultats = {}
+            for montant in montants_comparaison:
+                resultats[f"{montant}€ Standard"] = simuler_dca(montant, periode_dca, sim_mois, False)
+                if utiliser_ia:
+                    resultats[f"{montant}€ IA-Amélioré"] = simuler_dca(montant, periode_dca, sim_mois, True)
             
-            # Plot results
-            fig = go.Figure()
-            for label, data in results.items():
-                fig.add_trace(go.Scatter(
-                    x=data['month'],
-                    y=data['total_value'],
-                    mode='lines+markers',
-                    name=label
-                ))
+            # Tracer les résultats
+            fig, ax = plt.subplots(figsize=(12, 8))
+            colors = plt.cm.tab10(np.linspace(0, 1, len(resultats)))
             
-            fig.update_layout(
-                title="DCA Strategy Comparison",
-                xaxis_title="Month",
-                yaxis_title="Portfolio Value (€)",
-                hovermode='x unified'
-            )
+            for i, (label, data) in enumerate(resultats.items()):
+                ax.plot(data['mois'], data['valeur_totale'], 
+                       label=label, linewidth=2, color=colors[i], marker='o')
             
-            st.plotly_chart(fig, use_container_width=True)
+            ax.set_title("Comparaison des Stratégies DCA", fontsize=16, fontweight='bold')
+            ax.set_xlabel("Mois")
+            ax.set_ylabel("Valeur du Portefeuille (€)")
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            plt.tight_layout()
             
-            # Summary statistics
-            st.subheader("Simulation Summary")
-            summary_data = []
-            for label, data in results.items():
-                final_value = data['total_value'].iloc[-1]
-                total_invested = data['invested'].sum()
-                total_return = (final_value - total_invested) / total_invested * 100
-                summary_data.append({
-                    'Strategy': label,
-                    'Final Value': f"€{final_value:,.2f}",
-                    'Total Invested': f"€{total_invested:,.2f}",
-                    'Total Return': f"{total_return:+.1f}%"
+            st.pyplot(fig)
+            
+            # Statistiques de résumé
+            st.subheader("Résumé de la Simulation")
+            donnees_resume = []
+            for label, data in resultats.items():
+                valeur_finale = data['valeur_totale'].iloc[-1]
+                total_investi = data['investi'].sum()
+                rendement_total = (valeur_finale - total_investi) / total_investi * 100
+                donnees_resume.append({
+                    'Stratégie': label,
+                    'Valeur Finale': f"{valeur_finale:,.2f}€",
+                    'Total Investi': f"{total_investi:,.2f}€",
+                    'Rendement Total': f"{rendement_total:+.1f}%"
                 })
             
-            st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
+            st.dataframe(pd.DataFrame(donnees_resume), use_container_width=True)
     
     with tab3:
-        st.header("Market Alerts & Recommendations")
+        st.header("Alertes Marché & Recommandations")
         
-        # Current month allocation suggestion
-        st.subheader(f"Suggested Allocation for {dca_amount}€ Investment")
-        suggestions = generate_allocation_suggestion(profile, dca_amount)
+        # Suggestion d'allocation du mois en cours
+        st.subheader(f"Allocation Suggérée pour {montant_dca}€ d'Investissement")
+        suggestions = generer_suggestion_allocation(profil, montant_dca)
         
         col1, col2 = st.columns([3, 2])
         
         with col1:
-            suggestion_data = []
-            for asset, suggestion in suggestions.items():
-                suggestion_data.append({
-                    'Asset': asset,
-                    'Amount': f"€{suggestion['amount']:.2f}",
-                    'Weight': f"{suggestion['weight']:.1%}",
-                    'Reason': suggestion['reason']
+            donnees_suggestion = []
+            for actif, suggestion in suggestions.items():
+                donnees_suggestion.append({
+                    'Actif': actif,
+                    'Montant': f"{suggestion['montant']:.2f}€",
+                    'Poids': f"{suggestion['poids']:.1%}",
+                    'Raison': suggestion['raison']
                 })
             
-            st.dataframe(pd.DataFrame(suggestion_data), use_container_width=True)
+            st.dataframe(pd.DataFrame(donnees_suggestion), use_container_width=True)
         
         with col2:
-            # Pie chart of suggested allocation
-            fig = px.pie(
-                values=[s['amount'] for s in suggestions.values()],
-                names=list(suggestions.keys()),
-                title="Suggested Allocation"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # Alerts
-        st.subheader("Market Alerts")
-        alerts = create_alerts()
-        
-        for alert in alerts:
-            alert_type = alert['type']
-            icon = "🚨" if alert_type == "Warning" else "💡"
-            color = "red" if alert_type == "Warning" else "green"
+            # Graphique en secteurs de l'allocation suggérée
+            fig, ax = plt.subplots(figsize=(8, 6))
+            colors = plt.cm.Set2(np.linspace(0, 1, len(suggestions)))
             
-            with st.container():
-                st.markdown(f"""
-                <div style="padding: 10px; border-left: 4px solid {color}; background-color: rgba(0,0,0,0.05); margin: 5px 0;">
-                    {icon} <strong>{alert_type}:</strong> {alert['message']}
-                </div>
-                """, unsafe_allow_html=True)
+            wedges, texts, autotexts = ax.pie(
+                [s['montant'] for s in suggestions.values()],
+                labels=list(suggestions.keys()),
+                autopct='%1.1f%%',
+                colors=colors,
+                startangle=90
+            )
+            
+            ax.set_title("Allocation Suggérée", fontsize=14, fontweight='bold')
+            
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+            
+            st.pyplot(fig)
+        
+        # Alertes
+        st.subheader("Alertes Marché")
+        alertes = creer_alertes()
+        
+        for alerte in alertes:
+            type_alerte = alerte['type']
+            icone = "🚨" if type_alerte == "Avertissement" else "💡"
+            couleur = "red" if type_alerte == "Avertissement" else "green"
+            
+            st.markdown(f"""
+            <div style="padding: 10px; border-left: 4px solid {couleur}; background-color: rgba(0,0,0,0.05); margin: 5px 0;">
+                {icone} <strong>{type_alerte} :</strong> {alerte['message']}
+            </div>
+            """, unsafe_allow_html=True)
     
     with tab4:
-        st.header("AI Investment Chatbot")
-        st.markdown("Ask me about your portfolio, market conditions, or investment strategies!")
+        st.header("Chatbot IA Investissement")
+        st.markdown("Posez-moi des questions sur votre portefeuille, les conditions du marché ou les stratégies d'investissement !")
         
-        # Chat history
-        if 'chat_history' not in st.session_state:
-            st.session_state.chat_history = []
+        # Historique des conversations
+        if 'historique_chat' not in st.session_state:
+            st.session_state.historique_chat = []
         
-        # Display chat history
-        for chat in st.session_state.chat_history:
+        # Afficher l'historique des conversations
+        for chat in st.session_state.historique_chat:
             with st.container():
-                st.markdown(f"**You:** {chat['question']}")
-                st.markdown(f"**AI:** {chat['response']}")
+                st.markdown(f"**Vous :** {chat['question']}")
+                st.markdown(f"**IA :** {chat['reponse']}")
                 st.markdown("---")
         
-        # Chat input
-        question = st.text_input("Ask your question:", placeholder="Why reinforce BTC this month?")
+        # Saisie de chat
+        question = st.text_input("Posez votre question :", placeholder="Pourquoi renforcer BTC ce mois ?")
         
-        if st.button("Ask") and question:
-            response = chatbot_response(question, portfolio_manager)
-            st.session_state.chat_history.append({"question": question, "response": response})
+        if st.button("Demander") and question:
+            reponse = reponse_chatbot(question, gestionnaire_portefeuille)
+            st.session_state.historique_chat.append({"question": question, "reponse": reponse})
             st.rerun()
         
-        # Sample questions
-        st.subheader("Sample Questions")
-        sample_questions = [
-            "Why reinforce BTC this month?",
-            "What is my cumulative return over 6 months?",
-            "Which new asset looks interesting now?",
-            "Should I rebalance my portfolio?",
-            "What's the market outlook for Tesla?"
+        # Questions d'exemple
+        st.subheader("Questions d'Exemple")
+        questions_exemple = [
+            "Pourquoi renforcer BTC ce mois ?",
+            "Quel est mon rendement cumulé sur 6 mois ?",
+            "Quel nouvel actif semble intéressant maintenant ?",
+            "Dois-je rééquilibrer mon portefeuille ?",
+            "Quelles sont les perspectives du marché pour Tesla ?"
         ]
         
-        for sq in sample_questions:
-            if st.button(sq, key=f"sample_{sq}"):
-                response = chatbot_response(sq, portfolio_manager)
-                st.session_state.chat_history.append({"question": sq, "response": response})
+        for qe in questions_exemple:
+            if st.button(qe, key=f"exemple_{qe}"):
+                reponse = reponse_chatbot(qe, gestionnaire_portefeuille)
+                st.session_state.historique_chat.append({"question": qe, "reponse": reponse})
                 st.rerun()
 
 if __name__ == "__main__":
