@@ -366,7 +366,7 @@ def main():
             sim_mois = st.slider("Période de Simulation (mois)", 6, 60, 12)
             montants_comparaison = st.multiselect(
                 "Comparer les montants DCA (€)",
-                [100, 200, 300, 500, 1000],
+                [100, 200, 300, 400, 500, 1000],
                 default=[200, 400]
             )
         
