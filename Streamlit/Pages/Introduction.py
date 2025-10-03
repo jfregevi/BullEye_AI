@@ -11,6 +11,7 @@ def liste_valeurs(ticker, period):
     historical_data = stock.history(period=period)
     return list(historical_data['Close'])
 
-# Exemple d'utilisation
-data = liste_valeurs("btc-eur", "1y")
-print(data)
+def prediction():
+    
+
+
