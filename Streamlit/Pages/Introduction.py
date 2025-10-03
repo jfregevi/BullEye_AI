@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import load_model
 import datetime
+import joblib
 
 def liste_valeurs(ticker, period):
     if not isinstance(ticker, str):
