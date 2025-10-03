@@ -60,7 +60,7 @@ def main():
         
         if st.button("Afficher l'historique"):
             data = liste_valeurs(ticker, period)
-            if df is not None and len(data)>0:
+            if data is not None and len(data)>0:
                 # Plot matplotlib
                 fig, ax = plt.subplots(figsize=(10, 5))
                 ax.plot(range(len(data)), data, label=f"{ticker} Close")
