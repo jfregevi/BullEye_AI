@@ -1,5 +1,6 @@
 import streamlit as st
 from Pages.Introduction import liste_valeurs
+import matplotlib.pyplot as plt
 
 def main():
     st.set_page_config(
