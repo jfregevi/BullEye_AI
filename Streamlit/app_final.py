@@ -55,13 +55,15 @@ def main():
 
         ticker = st.text_input("Entrez un ticker pour afficher son historique :", value="SPY")
         period = st.selectbox("Période :", ["1y", "5y", "10y", "20y"], index=0)
+
+        # Faudrait se chauffer à rajouter les dates
         
         if st.button("Afficher l'historique"):
             df = liste_valeurs(ticker, period)
             if df is not None and len(df)>0:
                 # Plot matplotlib
                 fig, ax = plt.subplots(figsize=(10, 5))
-                ax.plot(df.index, df, label=f"{ticker} Close")
+                ax.plot([i for i in range[len(df)]], df, label=f"{ticker} Close")
                 ax.set_title(f"Historique des prix de {ticker}")
                 ax.set_xlabel("Date")
                 ax.set_ylabel("Prix")
