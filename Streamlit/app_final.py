@@ -1,4 +1,5 @@
 import streamlit as st
+from Pages.Introduction import liste_valeurs
 
 def main():
     st.set_page_config(
@@ -48,6 +49,7 @@ def main():
         st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
         # Bouton pour rediriger vers profil (à implémenter)
         st.button("Définir mon profil investisseur")
+
     
     # ------------------------------
     # 2) Page Portefeuille
