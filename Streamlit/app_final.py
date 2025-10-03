@@ -74,6 +74,10 @@ def main():
             else:
                 st.warning("Aucune donnée disponible pour ce ticker.")
 
+        ticker = st.text_input("Entrez un ticker pour comparer la prédiction du modèle à la courbe réelle sur les valeurs de l'année passée :", value="SPY")
+        st.line_chart(prediction(ticker))
+
+        
         st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
         # Bouton pour rediriger vers profil (à implémenter)
         st.button("Définir mon profil investisseur")
