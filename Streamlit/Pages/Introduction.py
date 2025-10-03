@@ -63,13 +63,16 @@ def prediction(ticker, window_size=20, forecast_days=252):
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
     num_features = len(feature_cols)
     
-    # 3️⃣ Préparer la dernière fenêtre
-    last_window = df[feature_cols].iloc[-window_size:].values
-    last_window = last_window.reshape(1, window_size, num_features)
-    
+     # 3️⃣ Préparer la dernière fenêtre
+    last_window = df[feature_cols].iloc[-window_size:].values.astype(float)
+    last_window_scaled = np.zeros_like(last_window, dtype=float)
+
+    for i in range(num_features):
+        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).ravel()
+
     # 4️⃣ Boucle de prédiction
     predictions = []
-    current_window = last_window.copy()
+    last_input = last_window_scaled.reshape(1, window_size, num_features)
     
     for _ in range(forecast_days):
         pred = model.predict(current_window, verbose=0)[0,0]
