@@ -1,0 +1,31 @@
+Le site doit contenir :
+
+1) Une page générale d'introduction pour expliquer le concept
+2) Une page traçant l'évolution de son portefeuille personnel et les dates d'investissement DCA théoriques
+3) Une page "d'actualités" économiques sur les actifs les plus en vogue
+4) Une page avec un chatbot IA
+
+Dans les détails :
+
+1) Le projet consiste à permettre aux utilisateurs d'investir régulièrement (DCA) tout en maximisant leurs gains à l'aide d'un modèle de prédiction de cours boursiers.
+
+Ma volonté d'investir part d'un principe simple : l'investisseur moyen est gagnant sur le long terme. Maintenant, je me suis demandé si nous je ne pouvais pas maximiser mes gains tout en restant un 
+profil d'investisseur long terme. c'est pourquoi j'ai lancé ce projet.
+
+Cette page a donc plusieurs objectifs :
+- parler rapidement de la croissance certaine des marchés sur le long terme (somme des money supply) + tracer la courbe
+- prouver la validité du modèle de prédiction à moyen terme pour plusieurs actifs (SP500, Nasdaq, bitcoin)
+- parler des limites à très court terme
+
+Il serait pas mal que cette page propose de rediriger vers une page permettant à l'utilisateur de trouver son profil d'investisseur.
+
+2) Cette page n'est possible que si j'arrive à enregistrer les données des investisseurs qq part. 
+Pour commencer, je peux partir du principe que la personnne va donner ses positions via un excel. Je verrai plus tard pour le stockage.
+Ensuite, cette page vise à définir des dates d'investissement auprès de l'utilisateur. Cela permet de ne pas oublier, et pourquoi pas à terme le lier avec des notifications.
+
+3) Proposer parmi une liste d'actifs déjà solides ceux qui ont une belle perf depuis 1 jour, 1 semaine, 1 mois. Ce serait pas mal de commencer par diviser cette recherche en sous-catégories, qui seront 
+pour l'instant cryptos et actions.
+L'idée est d'accompagner tout ça de courbe interactive.
+
+4) Ce chatbot permettra pur commencer de définir le profil investisseur de l'utilisateur.
+POur le reste cela sera définit plus tard.
