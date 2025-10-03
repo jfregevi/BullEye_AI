@@ -6,3 +6,4 @@ yfinance
 scikit-learn
 joblib
 tensorflow
+h5py
