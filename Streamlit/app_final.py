@@ -58,8 +58,6 @@ def main():
         if st.button("Afficher l'historique"):
             df = liste_valeurs(ticker, period)
             if df is not None and len(df)>0:
-                st.write(df.head())
-                
                 # Plot matplotlib
                 fig, ax = plt.subplots(figsize=(10, 5))
                 ax.plot(df.index, df['Close'], label=f"{ticker} Close")
