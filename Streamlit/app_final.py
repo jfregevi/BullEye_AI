@@ -61,7 +61,7 @@ def main():
             if df is not None and len(df)>0:
                 # Plot matplotlib
                 fig, ax = plt.subplots(figsize=(10, 5))
-                ax.plot(df.index, df['Close'], label=f"{ticker} Close")
+                ax.plot(df.index, df, label=f"{ticker} Close")
                 ax.set_title(f"Historique des prix de {ticker}")
                 ax.set_xlabel("Date")
                 ax.set_ylabel("Prix")
