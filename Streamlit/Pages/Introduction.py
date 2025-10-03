@@ -33,8 +33,8 @@ def create_windows(df, window_size=20, feature_cols=None):
 
 def prediction(ticker, window_size=20, forecast_days=252):
     # 1️⃣ Télécharger données historiques
-    end_date = datetime.date.today()
-    start_date = end_date - datetime.timedelta(days=3*365)  # prendre 3 ans pour la stabilité
+    end_date = datetime.date.today() - datetime.timedelta(days=forecast_days)
+    start_date = end_date - datetime.timedelta(days=10*365)  # prendre 3 ans pour la stabilité
     df = yf.download(ticker, start=start_date, end=end_date).dropna()
     
     # 2️⃣ Ajouter les indicateurs techniques
@@ -50,18 +50,18 @@ def prediction(ticker, window_size=20, forecast_days=252):
     df.dropna(inplace=True)
     
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
+    num_features = len(feature_cols)
     
-    # 3️⃣ Préparer la dernière fenêtre
-    last_window = df[feature_cols].iloc[-window_size:].values  # Shape: (window_size, num_features)
+    # 3️⃣ Extraire la fenêtre finale qui se termine exactement à end_date
+    df = df.sort_index()  # s'assurer que les dates sont triées
+    last_window = df.loc[:pd.Timestamp(end_date)].iloc[-window_size:][feature_cols].values
+
+    # 4️⃣ Scaler la fenêtre
     last_window_scaled = np.zeros_like(last_window, dtype=float)
+    for i in range(num_features):
+        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(1,-1)).flatten()
     
-    # ✅ CORRECTION : Transposer pour correspondre à l'entraînement
-    for i in range(len(feature_cols)):
-        # Le scaler attend (1, window_size) car il a été entraîné sur (n_samples, window_size)
-        feature_data = last_window[:, i].reshape(1, -1)  # Shape: (1, window_size)
-        last_window_scaled[:, i] = scalers_X[i].transform(feature_data).flatten()
-    
-    last_input = last_window_scaled.reshape(1, window_size, len(feature_cols))
+    last_input = last_window_scaled.reshape(1, window_size, num_features)
     predictions = []
     
     # 4️⃣ Boucle pour prédiction jour par jour
