@@ -51,16 +51,15 @@ def prediction(ticker, window_size=20, forecast_days=252):
     
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
     
-   # 3️⃣ Préparer la dernière fenêtre (CORRECTION ICI)
+    # 3️⃣ Préparer la dernière fenêtre
     last_window = df[feature_cols].iloc[-window_size:].values  # Shape: (window_size, num_features)
     last_window_scaled = np.zeros_like(last_window, dtype=float)
     
-    # ✅ Normaliser comme dans l'entraînement
+    # ✅ CORRECTION : Transposer pour correspondre à l'entraînement
     for i in range(len(feature_cols)):
-        # Reshape en (window_size, 1) puis transform puis reshape en (window_size,)
-        last_window_scaled[:, i] = scalers_X[i].transform(
-            last_window[:, i].reshape(-1, 1)
-        ).flatten()
+        # Le scaler attend (1, window_size) car il a été entraîné sur (n_samples, window_size)
+        feature_data = last_window[:, i].reshape(1, -1)  # Shape: (1, window_size)
+        last_window_scaled[:, i] = scalers_X[i].transform(feature_data).flatten()
     
     last_input = last_window_scaled.reshape(1, window_size, len(feature_cols))
     predictions = []
