@@ -46,16 +46,18 @@ def main():
         - Maximisez vos gains avec notre modèle de prédiction IA à moyen terme.
         - Le marché croît sur le long terme, mais il y a des limites à court terme.
         """)
-        st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
-        # Bouton pour rediriger vers profil (à implémenter)
-        st.button("Définir mon profil investisseur")
+
+        st.header("Pourquoi investir ?")
+        st.markdown("""La raison est simple : vous êtes gagnat sur le long terme !
+        Vous pouvez choisir des actifs juste en dessous pour vous convaincre que sur le long terme, chacune des courbes sera croissante.
+        """)
 
         ticker = st.text_input("Entrez un ticker pour afficher son historique :", value="SPY")
-        period = st.selectbox("Période :", ["1y", "6mo", "3mo", "1mo"], index=0)
+        period = st.selectbox("Période :", ["1y", "5y", "10y", "20y"], index=0)
         
         if st.button("Afficher l'historique"):
             df = liste_valeurs(ticker, period)
-            if df is not None and not df.empty:
+            if df is not None and len(df)>0:
                 st.write(df.head())
                 
                 # Plot matplotlib
@@ -70,6 +72,10 @@ def main():
                 st.pyplot(fig)
             else:
                 st.warning("Aucune donnée disponible pour ce ticker.")
+
+        st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
+        # Bouton pour rediriger vers profil (à implémenter)
+        st.button("Définir mon profil investisseur")
 
     
     # ------------------------------
