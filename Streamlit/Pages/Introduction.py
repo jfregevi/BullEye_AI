@@ -31,10 +31,10 @@ def create_windows(df, window_size=20, feature_cols=None):
         X.append(window)
     return np.array(X)
 
-def prediction(ticker, window_size=20, forecast_days=365):
+def prediction(ticker, window_size=20, forecast_days=252):
     # 1️⃣ Télécharger données historiques
     end_date = datetime.date.today()
-    start_date = end_date - datetime.timedelta(days=3*365)  # prendre 3 ans pour être sûr
+    start_date = end_date - datetime.timedelta(days=3*365)  # prendre 3 ans pour la stabilité
     df = yf.download(ticker, start=start_date, end=end_date).dropna()
     
     # 2️⃣ Ajouter les indicateurs techniques
@@ -55,10 +55,10 @@ def prediction(ticker, window_size=20, forecast_days=365):
     last_window = df[feature_cols].iloc[-window_size:].values
     last_window_scaled = np.zeros_like(last_window, dtype=float)
     for i in range(len(feature_cols)):
-        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).ravel()
+        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).flatten()
     
+    last_input = last_window_scaled.reshape(1, window_size, len(feature_cols))
     predictions = []
-    last_input = last_window_scaled.copy().reshape(1, window_size, len(feature_cols))
     
     # 4️⃣ Boucle pour prédiction jour par jour
     for _ in range(forecast_days):
@@ -66,15 +66,16 @@ def prediction(ticker, window_size=20, forecast_days=365):
         pred = scaler_y.inverse_transform(pred_scaled)[0,0]
         predictions.append(pred)
         
-        # Mise à jour de la fenêtre pour le prochain jour
-        next_row_scaled = last_input[0][1:,:].copy()  # décaler la fenêtre
-        next_row_scaled = np.vstack([next_row_scaled, last_input[0][-1,:]])  # placeholder pour la nouvelle ligne
-        next_row_scaled[-1,3] = pred_scaled  # mettre le close prédit à la place
+        # Préparer la nouvelle fenêtre
+        next_row_scaled = last_input[0,1:,:].copy()  # décaler la fenêtre
+        new_row = last_input[0,-1,:].copy()
+        new_row[3] = pred_scaled  # remplacer Close par la prédiction
+        next_row_scaled = np.vstack([next_row_scaled, new_row])
         last_input = next_row_scaled.reshape(1, window_size, len(feature_cols))
     
-    # 5️⃣ Créer les dates correspondantes
+    # 5️⃣ Créer les dates correspondantes (jours ouvrés)
     start_forecast = df.index[-1] + pd.Timedelta(days=1)
-    forecast_dates = pd.date_range(start=start_forecast, periods=forecast_days, freq='B')  # jours ouvrés
+    forecast_dates = pd.bdate_range(start=start_forecast, periods=forecast_days)
     
     return pd.Series(predictions, index=forecast_dates, name=f"{ticker}_pred")
     
