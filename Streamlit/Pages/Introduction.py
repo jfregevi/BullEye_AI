@@ -51,11 +51,16 @@ def prediction(ticker, window_size=20, forecast_days=252):
     
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
     
-    # 3️⃣ Préparer la dernière fenêtre
-    last_window = df[feature_cols].iloc[-window_size:].values
+   # 3️⃣ Préparer la dernière fenêtre (CORRECTION ICI)
+    last_window = df[feature_cols].iloc[-window_size:].values  # Shape: (window_size, num_features)
     last_window_scaled = np.zeros_like(last_window, dtype=float)
+    
+    # ✅ Normaliser comme dans l'entraînement
     for i in range(len(feature_cols)):
-        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).flatten()
+        # Reshape en (window_size, 1) puis transform puis reshape en (window_size,)
+        last_window_scaled[:, i] = scalers_X[i].transform(
+            last_window[:, i].reshape(-1, 1)
+        ).flatten()
     
     last_input = last_window_scaled.reshape(1, window_size, len(feature_cols))
     predictions = []
@@ -69,7 +74,7 @@ def prediction(ticker, window_size=20, forecast_days=252):
         # Préparer la nouvelle fenêtre
         next_row_scaled = last_input[0,1:,:].copy()  # décaler la fenêtre
         new_row = last_input[0,-1,:].copy()
-        new_row[3] = pred_scaled  # remplacer Close par la prédiction
+        new_row[3] = pred_scaled[0,0]  # remplacer Close par la prédiction
         next_row_scaled = np.vstack([next_row_scaled, new_row])
         last_input = next_row_scaled.reshape(1, window_size, len(feature_cols))
     
