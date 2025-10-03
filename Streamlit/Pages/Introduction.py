@@ -31,13 +31,24 @@ def create_windows(df, window_size=20, feature_cols=None):
         X.append(window)
     return np.array(X)
 
+import yfinance as yf
+import pandas as pd
+import numpy as np
+from tensorflow.keras.models import load_model
+
+# Charger ton modèle (pré-entraîné sur AAPL)
+model = load_model("Streamlit/Pages/modele_gru.h5", compile=False)
+
 def prediction(ticker, window_size=20, forecast_days=252):
+    """
+    Prédit le prix de l'actif sur forecast_days jours ouvrés à partir du ticker.
+    """
     # 1️⃣ Télécharger données historiques
-    end_date = datetime.date.today() - datetime.timedelta(days=forecast_days)
-    start_date = end_date - datetime.timedelta(days=10*365)  # prendre 3 ans pour la stabilité
+    end_date = pd.Timestamp.today()
+    start_date = end_date - pd.Timedelta(days=3*365)  # prendre 3 ans pour stabilité
     df = yf.download(ticker, start=start_date, end=end_date).dropna()
     
-    # 2️⃣ Ajouter les indicateurs techniques
+    # 2️⃣ Ajouter indicateurs techniques
     df['SMA_10'] = df['Close'].rolling(10).mean()
     df['EMA_10'] = df['Close'].ewm(span=10, adjust=False).mean()
     delta = df['Close'].diff()
@@ -52,32 +63,26 @@ def prediction(ticker, window_size=20, forecast_days=252):
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
     num_features = len(feature_cols)
     
-    # 3️⃣ Extraire la fenêtre finale qui se termine exactement à end_date
-    df = df.sort_index()  # s'assurer que les dates sont triées
-    last_window = df.loc[:pd.Timestamp(end_date)].iloc[-window_size:][feature_cols].values
-
-    # 4️⃣ Scaler la fenêtre
-    last_window_scaled = np.zeros_like(last_window, dtype=float)
-    for i in range(num_features):
-        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(1,-1)).flatten()
+    # 3️⃣ Préparer la dernière fenêtre
+    last_window = df[feature_cols].iloc[-window_size:].values
+    last_window = last_window.reshape(1, window_size, num_features)
     
-    last_input = last_window_scaled.reshape(1, window_size, num_features)
+    # 4️⃣ Boucle de prédiction
     predictions = []
+    current_window = last_window.copy()
     
-    # 4️⃣ Boucle pour prédiction jour par jour
     for _ in range(forecast_days):
-        pred_scaled = model.predict(last_input, verbose=0)
-        pred = scaler_y.inverse_transform(pred_scaled)[0,0]
+        pred = model.predict(current_window, verbose=0)[0,0]
         predictions.append(pred)
         
-        # Préparer la nouvelle fenêtre
-        next_row_scaled = last_input[0,1:,:].copy()  # décaler la fenêtre
-        new_row = last_input[0,-1,:].copy()
-        new_row[3] = pred_scaled[0,0]  # remplacer Close par la prédiction
-        next_row_scaled = np.vstack([next_row_scaled, new_row])
-        last_input = next_row_scaled.reshape(1, window_size, len(feature_cols))
+        # Mise à jour de la fenêtre
+        next_row = current_window[0,1:,:].copy()
+        new_row = current_window[0,-1,:].copy()
+        new_row[3] = pred  # Close prédit
+        next_row = np.vstack([next_row, new_row])
+        current_window = next_row.reshape(1, window_size, num_features)
     
-    # 5️⃣ Créer les dates correspondantes (jours ouvrés)
+    # 5️⃣ Générer les dates
     start_forecast = df.index[-1] + pd.Timedelta(days=1)
     forecast_dates = pd.bdate_range(start=start_forecast, periods=forecast_days)
     
