@@ -16,9 +16,9 @@ def liste_valeurs(ticker, period):
     return list(historical_data['Close'])
 
 # Charger les fichiers sauvegardés
-model = load_model("Pages\modele_gru.h5")
-scalers_X = joblib.load("Pages\scalers_X.pkl")
-scaler_y = joblib.load("Pages\scaler_y.pkl")
+model = load_model("modele_gru.h5")
+scalers_X = joblib.load("scalers_X.pkl")
+scaler_y = joblib.load("scaler_y.pkl")
 
 def create_windows(df, window_size=20, feature_cols=None):
     """
