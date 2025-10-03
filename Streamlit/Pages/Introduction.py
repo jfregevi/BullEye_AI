@@ -53,9 +53,9 @@ def prediction(ticker, window_size=20, forecast_days=365):
     
     # 3️⃣ Préparer la dernière fenêtre
     last_window = df[feature_cols].iloc[-window_size:].values
-    last_window_scaled = np.zeros_like(last_window)
+    last_window_scaled = np.zeros_like(last_window, dtype=float)
     for i in range(len(feature_cols)):
-        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).flatten()
+        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).ravel()
     
     predictions = []
     last_input = last_window_scaled.copy().reshape(1, window_size, len(feature_cols))
