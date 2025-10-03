@@ -16,7 +16,7 @@ def liste_valeurs(ticker, period):
     return list(historical_data['Close'])
 
 # Charger les fichiers sauvegardés
-model = load_model("Streamlit/Pages/modele_gru.h5")
+model = load_model("Streamlit/Pages/modele_gru.h5", compile=False)
 scalers_X = joblib.load("Streamlit/Pages/scalers_X.pkl")
 scaler_y = joblib.load("Streamlit/Pages/scaler_y.pkl")
 
