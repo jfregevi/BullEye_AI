@@ -82,5 +82,6 @@ def prediction(ticker, window_size=20, forecast_days=252):
     start_forecast = df.index[-1] + pd.Timedelta(days=1)
     forecast_dates = pd.bdate_range(start=start_forecast, periods=forecast_days)
     predictions_real = scaler_y.inverse_transform(np.array(predictions).reshape(-1, 1))
+    predictions_real = predictions_real.flatten()  # <- ici on met en 1D
     
     return pd.Series(predictions_real, index=forecast_dates, name=f"{ticker}_pred")
