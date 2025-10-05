@@ -17,6 +17,7 @@ Cette page a donc plusieurs objectifs :
 - prouver la validité du modèle de prédiction à moyen terme pour plusieurs actifs (SP500, Nasdaq, bitcoin)
   - Je n'avais pas compris mais mon modèle actuel se sert de fenêtre toujours actualisées sur des données réelles pour prédire le jour suivant. Ainsi, si je veux prédire à partir d'ajd, il faut que mon modèle soit capable de réagir à l'ajout d'une valeur prédite dans les fenêtres...
   --> Ca se gère = faut en réalité enregistré plusieurs modèles pour prédire plusieurs jours à l'avance et ça marche bien
+  Faut simplement boucler sur 14 modèles entraînés chacun pour des forecast différents.
 - parler des limites à très court terme
 
 Il serait pas mal que cette page propose de rediriger vers une page permettant à l'utilisateur de trouver son profil d'investisseur.
