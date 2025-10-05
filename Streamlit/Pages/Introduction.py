@@ -21,7 +21,7 @@ model = load_model("Streamlit/Pages/modele_gru.h5", compile=False)
 scalers_X = joblib.load("Streamlit/Pages/scalers_X.pkl")
 scaler_y = joblib.load("Streamlit/Pages/scaler_y.pkl")
 
-def create_windows(df, window_size=20, feature_cols=None):
+def create_windows(df, window_size=20, feature_cols=["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]):
     """
     Prépare les fenêtres multivariées pour la prédiction.
     """
@@ -31,21 +31,13 @@ def create_windows(df, window_size=20, feature_cols=None):
         X.append(window)
     return np.array(X)
 
-import yfinance as yf
-import pandas as pd
-import numpy as np
-from tensorflow.keras.models import load_model
-
-# Charger ton modèle (pré-entraîné sur AAPL)
-model = load_model("Streamlit/Pages/modele_gru.h5", compile=False)
-
 def prediction(ticker, window_size=20, forecast_days=252):
     """
     Prédit le prix de l'actif sur forecast_days jours ouvrés à partir du ticker.
     """
     # 1️⃣ Télécharger données historiques
     end_date = pd.Timestamp.today()
-    start_date = end_date - pd.Timedelta(days=3*365)  # prendre 3 ans pour stabilité
+    start_date = end_date - pd.Timedelta(days=forecast_days + window_size)  # On veut voir la courbe sur forecast_days, mais faut les windows_size dernières données 
     df = yf.download(ticker, start=start_date, end=end_date).dropna()
     
     # 2️⃣ Ajouter indicateurs techniques
@@ -62,19 +54,21 @@ def prediction(ticker, window_size=20, forecast_days=252):
     
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
     num_features = len(feature_cols)
-    
-     # 3️⃣ Préparer la dernière fenêtre
-    last_window = df[feature_cols].iloc[-window_size:].values.astype(float)
-    last_window_scaled = np.zeros_like(last_window, dtype=float)
 
+    # Préparation des données d'entrée
+
+    X = create_windows(df, window_size, feature_cols)
+
+    X_scaled = np.zeros_like(X)
+    scalers_X = {}
     for i in range(num_features):
-        last_window_scaled[:,i] = scalers_X[i].transform(last_window[:,i].reshape(-1,1)).ravel()
-
+        X_scaled[:,:,i] = scalers_X[i].transform(X[:,:,i])
+    
     # 4️⃣ Boucle de prédiction
     predictions = []
-    last_input = last_window_scaled.reshape(1, window_size, num_features)
+    current_window = X[0]
     
-    for _ in range(forecast_days):
+    for i in range(forecast_days):
         pred = model.predict(current_window, verbose=0)[0,0]
         predictions.append(pred)
         
@@ -88,8 +82,6 @@ def prediction(ticker, window_size=20, forecast_days=252):
     # 5️⃣ Générer les dates
     start_forecast = df.index[-1] + pd.Timedelta(days=1)
     forecast_dates = pd.bdate_range(start=start_forecast, periods=forecast_days)
+    predictions_real = scaler_y.inverse_transform(np.array(predictions).reshape(-1, 1))
     
-    return pd.Series(predictions, index=forecast_dates, name=f"{ticker}_pred")
-    
-
-
+    return pd.Series(predictions_real, index=forecast_dates, name=f"{ticker}_pred")
