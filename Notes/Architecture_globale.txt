@@ -18,6 +18,14 @@ Cette page a donc plusieurs objectifs :
   - Je n'avais pas compris mais mon modèle actuel se sert de fenêtre toujours actualisées sur des données réelles pour prédire le jour suivant. Ainsi, si je veux prédire à partir d'ajd, il faut que mon modèle soit capable de réagir à l'ajout d'une valeur prédite dans les fenêtres...
   --> Ca se gère = faut en réalité enregistré plusieurs modèles pour prédire plusieurs jours à l'avance et ça marche bien
   Faut simplement boucler sur 14 modèles entraînés chacun pour des forecast différents.
+
+Notes de ChatGpt :
+  Alternative
+  Si tu ne veux pas entraîner 14 modèles :
+  Recursive forecasting : utiliser ton modèle one-step et réinjecter les prédictions comme tu l’avais commencé.
+  Simple mais moins précis pour plus de 5-10 jours.
+  Direct+Recursive hybride : entraîner un modèle pour quelques horizons (1, 3, 7, 14 jours) et utiliser recursive pour les jours intermédiaires.
+
 - parler des limites à très court terme
 
 Il serait pas mal que cette page propose de rediriger vers une page permettant à l'utilisateur de trouver son profil d'investisseur.
