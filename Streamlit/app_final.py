@@ -75,6 +75,7 @@ def main():
             else:
                 st.warning("Aucune donnée disponible pour ce ticker.")
 
+        forecast_days = 3
         ticker = st.text_input("Entrez un ticker pour comparer la prédiction du modèle à la courbe réelle sur les valeurs de l'année passée :", value="SPY")
         st.line_chart(prediction(ticker))
 
