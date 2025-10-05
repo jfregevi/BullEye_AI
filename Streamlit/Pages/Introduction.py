@@ -65,7 +65,7 @@ def prediction(ticker, window_size=20, forecast_days=252):
     
     # 4️⃣ Boucle de prédiction
     predictions = []
-    current_window = X[0]
+    current_window = X_scaled[0].reshape(1, window_size, num_features)
     
     for i in range(forecast_days):
         pred = model.predict(current_window, verbose=0)[0,0]
