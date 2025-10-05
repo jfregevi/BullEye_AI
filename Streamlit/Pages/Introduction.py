@@ -60,7 +60,6 @@ def prediction(ticker, window_size=20, forecast_days=252):
     X = create_windows(df, window_size, feature_cols)
 
     X_scaled = np.zeros_like(X)
-    scalers_X = {}
     for i in range(num_features):
         X_scaled[:,:,i] = scalers_X[i].transform(X[:,:,i])
     
