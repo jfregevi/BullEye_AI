@@ -109,11 +109,11 @@ def main():
                 })
             
                 # Calcul des pourcentages d'évolution par rapport à la valeur actuelle
-                df_res["Évolution vs Actuel (%)"] = ((df_res["Prix (€)"] - current) / current * 100)
+                df_res["Évolution vs Actuel (%)"] = round(((df_res["Prix (€)"] - current) / current * 100),2)
             
                 # Calcul de l'erreur prédiction
                 df_res["Erreur prédiction (%)"] = [None, 
-                                                   ((pred_14j - real_14j) / real_14j * 100).round(2) if not pd.isna(real_14j) else None, 
+                                                   round(((pred_14j - real_14j) / real_14j * 100),2) if not pd.isna(real_14j) else None, 
                                                    None]
             
                 st.table(df_res)
