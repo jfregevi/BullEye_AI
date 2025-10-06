@@ -130,5 +130,9 @@ def prediction2(ticker, window_size=20, forecast_days=14):
     
     predictions_real = scaler_y.inverse_transform(np.array(predictions).reshape(-1, 1))
     predictions_real = predictions_real.flatten()  # <- ici on met en 1D
+
+    # Récupérer la valeur réelle 14 jours après
+    real_value = yf.download(ticker, start=df.index[0] + pd.Timedelta(days=14),
+                             end=df.index[0] + pd.Timedelta(days=15))['Close'].values[0]
     
-    return predictions_real
+    return predictions_real, real_value
