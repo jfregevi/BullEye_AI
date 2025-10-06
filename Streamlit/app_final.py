@@ -97,25 +97,27 @@ def main():
             pred_values = prediction2(ticker, window_size=20, forecast_days=14)
             
             if len(pred_values) == 3:
-                pred_14j, current, real_14j = pred_values
-        
+                # Conversion en float (ou NaN si None)
+                pred_14j = float(pred_values[0]) if pred_values[0] is not None else float('nan')
+                real_14j = float(pred_values[1]) if pred_values[1] is not None else float('nan')
+                current  = float(pred_values[2]) if pred_values[2] is not None else float('nan')
+            
                 # Création du DataFrame
                 df_res = pd.DataFrame({
                     "Valeur": ["Actuelle", "Prévue +14j", "Réelle +14j"],
                     "Prix (€)": [current, pred_14j, real_14j]
                 })
-        
+            
                 # Calcul des pourcentages d'évolution par rapport à la valeur actuelle
                 df_res["Évolution vs Actuel (%)"] = ((df_res["Prix (€)"] - current) / current * 100).round(2)
-        
+            
                 # Calcul de l'erreur prédiction
                 df_res["Erreur prédiction (%)"] = [None, 
-                                                   ((pred_14j - real_14j) / real_14j * 100).round(2), 
+                                                   ((pred_14j - real_14j) / real_14j * 100).round(2) if not pd.isna(real_14j) else None, 
                                                    None]
-        
+            
                 st.table(df_res)
-            else:
-                st.warning("La fonction prediction2 n'a pas renvoyé 3 valeurs.")
+
     
     
             
