@@ -116,7 +116,7 @@ def prediction2(ticker, window_size=20, forecast_days=14):
 
     X_scaled = np.zeros_like(X)
     for i in range(num_features):
-        X_scaled[:,:,i] = scalers_X[i].transform(X[:,:,i])
+        X_scaled[0,:,i] = scalers_X[i].transform(X[0,:,i].reshape(-1,1)).flatten()
     
     predictions = []
     pred = model.predict(X_scaled, verbose=0)
