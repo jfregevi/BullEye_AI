@@ -37,6 +37,17 @@ def main():
         "📰 Actualités",
         "🤖 Chatbot IA"
     ])
+
+    # Créer une variable pour stocker la valeur
+    if "user_value" not in st.session_state:
+        st.session_state.DCA = None
+    
+    # Modal qui s'ouvre automatiquement
+    if st.session_state.DCA is None:
+        DCA = st.text_input("Entrez une durée de DCA :")
+        if DCA and st.button("Valider"):
+            st.session_state.user_value = DCA
+            st.experimental_rerun()
     
     # ------------------------------
     # 1) Page d'introduction
@@ -76,7 +87,7 @@ def main():
                 st.warning("Aucune donnée disponible pour ce ticker.")
 
         ticker = st.text_input("Entrez un ticker pour comparer la prédiction du modèle à la courbe réelle sur les valeurs de l'année passée :", value="SPY")
-        st.line_chart(prediction(ticker, window_size=20, forecast_days=30))
+        st.line_chart(prediction2(ticker, window_size=20, forecast_days=14))
 
         
         st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
