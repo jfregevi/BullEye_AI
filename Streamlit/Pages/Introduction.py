@@ -115,6 +115,7 @@ def prediction2(ticker, window_size=20, forecast_days=14):
     X = []
     window_0 = df.iloc[0:window_size][feature_cols].values
     X.append(window_0)
+    X = np.array(X)
 
     X_scaled = np.zeros_like(X)
     for i in range(num_features):
