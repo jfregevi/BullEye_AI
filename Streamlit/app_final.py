@@ -89,9 +89,35 @@ def main():
                 st.warning("Aucune donnée disponible pour ce ticker.")
 
         ticker = st.text_input("Entrez un ticker pour comparer la prédiction du modèle à la courbe réelle sur les valeurs de l'année passée :", value="SPY")
-        st.line_chart(prediction2(ticker, window_size=20, forecast_days=16))
-
         
+      
+        if ticker:
+            # On récupère la liste : [pred_14j, réel_14j, actuel]
+            pred_values = prediction2(ticker, window_size=20, forecast_days=14)
+            
+            if len(pred_values) == 3:
+                pred_14j, current, real_14j = pred_values
+        
+                # Création du DataFrame
+                df_res = pd.DataFrame({
+                    "Valeur": ["Actuelle", "Prévue +14j", "Réelle +14j"],
+                    "Prix (€)": [current, pred_14j, real_14j]
+                })
+        
+                # Calcul des pourcentages d'évolution par rapport à la valeur actuelle
+                df_res["Évolution vs Actuel (%)"] = ((df_res["Prix (€)"] - current) / current * 100).round(2)
+        
+                # Calcul de l'erreur prédiction
+                df_res["Erreur prédiction (%)"] = [None, 
+                                                   ((pred_14j - real_14j) / real_14j * 100).round(2), 
+                                                   None]
+        
+                st.table(df_res)
+            else:
+                st.warning("La fonction prediction2 n'a pas renvoyé 3 valeurs.")
+    
+    
+            
         st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
         # Bouton pour rediriger vers profil (à implémenter)
         st.button("Définir mon profil investisseur")
