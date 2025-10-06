@@ -89,7 +89,7 @@ def main():
                 st.warning("Aucune donnée disponible pour ce ticker.")
 
         ticker = st.text_input("Entrez un ticker pour comparer la prédiction du modèle à la courbe réelle sur les valeurs de l'année passée :", value="SPY")
-        st.line_chart(prediction2(ticker, window_size=20, forecast_days=14))
+        st.line_chart(prediction2(ticker, window_size=20, forecast_days=16))
 
         
         st.info("Découvrez votre profil investisseur pour mieux orienter vos décisions !")
