@@ -91,7 +91,7 @@ def prediction2(ticker, window_size=20, forecast_days=14):
     # Supposons qu'on est le 01/06/2025 et qu'on veut investir
     
     # 1️⃣ Télécharger données historiques
-    end_date = pd.Timestamp("2025-05-01") + pd.Timedelta(days=forecast_days) + 1
+    end_date = pd.Timestamp("2025-05-01") + pd.Timedelta(days=forecast_days + 1)
     start_date = end_date - pd.Timedelta(days= window_size)  # On veut voir la courbe sur forecast_days, mais faut les windows_size dernières données 
     df = yf.download(ticker, start=start_date, end=end_date).dropna()
     
