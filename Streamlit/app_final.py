@@ -38,16 +38,18 @@ def main():
         "🤖 Chatbot IA"
     ])
 
-    # Créer une variable pour stocker la valeur
-    if "user_value" not in st.session_state:
-        st.session_state.DCA = None
+    if "user_DCA" not in st.session_state:
+        st.session_state.user_DCA = ""
     
-    # Modal qui s'ouvre automatiquement
-    if st.session_state.DCA is None:
-        DCA = st.text_input("Entrez une durée de DCA :")
-        if DCA and st.button("Valider"):
-            st.session_state.user_value = DCA
-            st.experimental_rerun()
+    if st.session_state.user_DCA == "":
+        with st.container():  # juste pour isoler le formulaire
+            st.info("Veuillez entrer la durée de DCA pour continuer")
+            user_input = st.text_input("Durée DCA :", "")
+            if st.button("Valider DCA"):
+                st.session_state.user_DCA = user_input
+                st.experimental_rerun()  # rafraîchit la page avec la valeur stockée
+        st.stop()  # empêche le reste de la page de se charger tant que l'utilisateur n'a pas validé
+
     
     # ------------------------------
     # 1) Page d'introduction
