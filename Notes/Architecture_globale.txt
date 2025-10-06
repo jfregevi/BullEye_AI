@@ -40,3 +40,23 @@ L'idée est d'accompagner tout ça de courbe interactive.
 
 4) Ce chatbot permettra pur commencer de définir le profil investisseur de l'utilisateur.
 POur le reste cela sera définit plus tard.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+notes partie 1
+
+J'ai implémenté le tableau qui choppe la prédition dans n jours. Les résultats ne sont pas convaincants, surtout quand on applique le modèle à un autre actif.
+Une première solution est déjà de décaler les prédictions : faut se rappeler que pour que les courbes soient compatibles, faut les décaler.
+Ensuite faudra refaire des tests sur la généralisation.
