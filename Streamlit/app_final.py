@@ -1,6 +1,6 @@
 import streamlit as st
 from Pages.Introduction import liste_valeurs
-from Pages.Introduction import prediction
+from Pages.Introduction import prediction2
 import matplotlib.pyplot as plt
 
 def main():
