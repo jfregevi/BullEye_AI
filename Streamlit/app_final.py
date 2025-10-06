@@ -2,6 +2,7 @@ import streamlit as st
 from Pages.Introduction import liste_valeurs
 from Pages.Introduction import prediction2
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def main():
     st.set_page_config(
