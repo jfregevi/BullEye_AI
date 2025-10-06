@@ -110,26 +110,25 @@ def prediction2(ticker, window_size=20, forecast_days=14):
     feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
     num_features = len(feature_cols)
 
+    feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
+    num_features = len(feature_cols)
+
     # Préparation des données d'entrée
 
-    X = np.array([df.iloc[0:window_size][feature_cols].values])
+    X = create_windows(df, window_size, feature_cols)
 
     X_scaled = np.zeros_like(X)
     for i in range(num_features):
-        X_scaled[0,:,i] = scalers_X[i].transform(X[0,:,i].reshape(-1,1)).flatten()
+        X_scaled[:,:,i] = scalers_X[i].transform(X[:,:,i])
     
+    # 4️⃣ Boucle de prédiction
     predictions = []
-    pred = model.predict(X_scaled, verbose=0)
+    current_window = X_scaled[0].reshape(1, window_size, num_features)
+    
+    pred = model.predict(current_window, verbose=0)[0,0]
     predictions.append(pred)
     
     predictions_real = scaler_y.inverse_transform(np.array(predictions).reshape(-1, 1))
     predictions_real = predictions_real.flatten()  # <- ici on met en 1D
-
-    # Récupération de la valeur réelle à +14 jours
-    date_target = date_ref + pd.Timedelta(days=horizon)
-    try:
-        real_value = df.loc[df.index.get_loc(date_target, method="nearest"), "Close"]
-    except KeyError:
-        real_value = None  # si la date tombe sur un week-end ou férié
     
-    return predictions_real.tolist() + [real_value]
+    return predictions_real
