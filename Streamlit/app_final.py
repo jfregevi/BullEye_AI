@@ -109,7 +109,7 @@ def main():
                 })
             
                 # Calcul des pourcentages d'évolution par rapport à la valeur actuelle
-                df_res["Évolution vs Actuel (%)"] = ((df_res["Prix (€)"] - current) / current * 100).round(2)
+                df_res["Évolution vs Actuel (%)"] = ((df_res["Prix (€)"] - current) / current * 100)
             
                 # Calcul de l'erreur prédiction
                 df_res["Erreur prédiction (%)"] = [None, 
