@@ -31,7 +31,7 @@ def create_windows(df, window_size=20, feature_cols=["Open","High","Low","Close"
         X.append(window)
     return np.array(X)
 
-def prediction(ticker, window_size=20, forecast_days=252):
+def prediction1(ticker, window_size=20, forecast_days=252):
     """
     Prédit le prix de l'actif sur forecast_days jours ouvrés à partir du ticker.
     """
@@ -85,3 +85,53 @@ def prediction(ticker, window_size=20, forecast_days=252):
     predictions_real = predictions_real.flatten()  # <- ici on met en 1D
     
     return pd.Series(predictions_real, index=forecast_dates, name=f"{ticker}_pred")
+
+
+def prediction2(ticker, window_size=20, forecast_days=14):
+    # Supposons qu'on est le 01/06/2025 et qu'on veut investir
+    
+    # 1️⃣ Télécharger données historiques
+    end_date = pd.Timestamp("2025-05-01") + pd.Timedelta(days=forecast_days) + 1
+    start_date = end_date - pd.Timedelta(days= window_size)  # On veut voir la courbe sur forecast_days, mais faut les windows_size dernières données 
+    df = yf.download(ticker, start=start_date, end=end_date).dropna()
+    
+    # 2️⃣ Ajouter indicateurs techniques
+    df['SMA_10'] = df['Close'].rolling(10).mean()
+    df['EMA_10'] = df['Close'].ewm(span=10, adjust=False).mean()
+    delta = df['Close'].diff()
+    up = delta.clip(lower=0)
+    down = -1*delta.clip(upper=0)
+    roll_up = up.rolling(14).mean()
+    roll_down = down.rolling(14).mean()
+    RS = roll_up / roll_down
+    df['RSI_14'] = 100 - (100 / (1 + RS))
+    df.dropna(inplace=True)
+    
+    feature_cols = ["Open","High","Low","Close","Volume","SMA_10","EMA_10","RSI_14"]
+    num_features = len(feature_cols)
+
+    # Préparation des données d'entrée
+
+    X = []
+    window_0 = df.iloc[0:window_size][feature_cols].values
+    X.append(window)
+
+    X_scaled = np.zeros_like(X)
+    for i in range(num_features):
+        X_scaled[:,:,i] = scalers_X[i].transform(X[:,:,i])
+    
+    predictions = []
+    pred = model.predict(current_window, verbose=0)[0,0]
+    predictions.append(pred)
+    
+    predictions_real = scaler_y.inverse_transform(np.array(predictions).reshape(-1, 1))
+    predictions_real = predictions_real.flatten()  # <- ici on met en 1D
+
+    # Récupération de la valeur réelle à +14 jours
+    date_target = date_ref + pd.Timedelta(days=horizon)
+    try:
+        real_value = df.loc[df.index.get_loc(date_target, method="nearest"), "Close"]
+    except KeyError:
+        real_value = None  # si la date tombe sur un week-end ou férié
+    
+    return predictions_real.tolist() + [real_value]
