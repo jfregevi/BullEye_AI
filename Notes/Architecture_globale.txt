@@ -1,7 +1,7 @@
-Le site doit contenir :
+L'interface doit contenir :
 
-1) Une page générale d'introduction pour expliquer le concept
-2) Une page traçant l'évolution de son portefeuille personnel et les dates d'investissement DCA théoriques
+1) Une page générale d'introduction pour expliquer le concept de mon système d’investissement optimisé
+2) Une page traçant l'évolution de portefeuille utilisateur et les dates d'investissement DCA théoriques de celui-ci (pq pas afficher un planning et le jour actuel)
 3) Une page "d'actualités" économiques sur les actifs les plus en vogue
 4) Une page avec un chatbot IA
 
