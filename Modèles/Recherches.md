@@ -187,3 +187,12 @@ Précise juste lequel des 3 (1/2/3) tu veux et je te génère le code complet im
 
 Pas terrible avec des gros modèles : ils ne sont pas optimaux pour des prédictions à court terme visiblement.
 Je me repenche sur des modèlesplus simples.
+
+
+
+
+
+## Test de plein de modèles
+
+Meilleur modèle test 1 : CNN2-BiGRU avec RMSE = 3.6115
+Meilleur modèle test 2 : BiGRU-L2-RDO avec RMSE = 3.7139
