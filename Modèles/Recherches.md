@@ -181,3 +181,9 @@ Précise juste lequel des 3 (1/2/3) tu veux et je te génère le code complet im
 [2]: https://arxiv.org/abs/2204.02623?utm_source=chatgpt.com "Attention-based CNN-LSTM and XGBoost hybrid model for ..."
 [3]: https://www.mdpi.com/1099-4300/27/8/881?utm_source=chatgpt.com "Hybrid CNN-LSTM-GNN Neural Network for A-Share Stock ..."
 [4]: https://thesai.org/Downloads/Volume15No12/Paper_23-A_Deep_Learning_Based_LSTM_for_Stock_Price_Prediction.pdf?utm_source=chatgpt.com "A Deep Learning-Based LSTM for Stock Price Prediction ..."
+
+
+# Résultats
+
+Pas terrible avec des gros modèles : ils ne sont pas optimaux pour des prédictions à court terme visiblement.
+Je me repenche sur des modèlesplus simples.
