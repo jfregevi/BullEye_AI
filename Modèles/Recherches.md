@@ -1,13 +1,17 @@
+## Date : 22/11/2025
+
 Après m'être fixé sur l'architecure global de mon projet, il convient d'optimiser au maximum mon modèle de prédiction qui pour l'insatnt n'est que le résultat d'un électif de Centrale.
 
+# Première étape
 Pour cela, je me lance dans une recherche bibliographique sur Google Scholar.
 
+# Deuxième étape
 En parallèle, une requête ChatGPT m'ouvre beaucoup de possiblités : 
 
-Requête : 
+**Requête :**
 "a partir de ces 2 sources : file:///C:/Users/aleor/Desktop/Ecole/Centrale_Lille/D%C3%A9fi%20G1G2/Lets_Go/Finance/pp+568-583+V005IS10N001996+Hajar+BOUDRAINE_compressed.pdf et https://hal.science/hal-05168124v1/file/CNIA_2025_paper_17.pdf ainsi que des recherches libres de ta part sur google scholar à propos d'articles scientifiques sur l'utilisation de modèle neuronau pour la prédeiction boursière, je te demande de me donner une structure de réseau neuronal oprtimal pour la prédiction de cours boursier."
 
-Réponse : 
+**Réponse :** 
 
 Super — je m’appuie sur les deux sources que tu as données (je n’ai pas pu ouvrir le `file:///…` local depuis mon environnement, voir note plus bas) **et** sur un balayage récent de la littérature (revues 2020–2025, articles hybrides CNN–LSTM/attention/GNN, comparaisons LSTM vs XGBoost, etc.). Je te propose ci-dessous **une architecture neuronale « optimale » pragmatique et reproductible** pour la prédiction de cours boursiers — conçue pour être robuste en pratique (préprocessing, entraînement, évaluation et déploiement inclus). J’indique aussi pourquoi chaque choix est fait et je fournis des hyper-paramètres initiaux testés en pratique.
 
