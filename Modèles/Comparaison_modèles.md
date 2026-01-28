@@ -1,4 +1,9 @@
 # Architectures de Deep Learning pour la Prévision de Séries Temporelles Financières Multivariées
+
+## Date : 5/12
+### Généré par Perplexity
+
+
 ## Comparative Analysis: LSTM, GRU, CNN/TCN, and Dense Networks for Financial Asset Forecasting
 
 **Document scientifique complet — Version 1.0**
