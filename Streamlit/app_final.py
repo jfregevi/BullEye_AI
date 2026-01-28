@@ -48,7 +48,7 @@ def main():
             user_input = st.text_input("Durée DCA :", "")
             if st.button("Valider DCA"):
                 st.session_state.user_DCA = user_input
-                st.experimental_rerun()  # rafraîchit la page avec la valeur stockée
+                st.rerun()  # rafraîchit la page avec la valeur stockée
         st.stop()  # empêche le reste de la page de se charger tant que l'utilisateur n'a pas validé
 
     
