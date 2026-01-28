@@ -119,7 +119,12 @@ def prediction2(ticker, window_size=20, forecast_days=14):
 
     X_scaled = np.zeros_like(X)
     for i in range(num_features):
-        X_scaled[:,:,i] = scalers_X[i].transform(X[:,:,i])
+        # On "aplatit" les données pour le scaler : (N, 20) -> (N*20, 1)
+        feature_data = X[:, :, i].reshape(-1, 1)
+        # On transforme
+        scaled_data = scalers_X[i].transform(feature_data)
+        # On remet à la forme d'origine (N, 20)
+        X_scaled[:, :, i] = scaled_data.reshape(X[:, :, i].shape)
     
     # 4️⃣ Boucle de prédiction
     predictions = []
