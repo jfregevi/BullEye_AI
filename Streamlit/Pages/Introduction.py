@@ -78,13 +78,24 @@ def prediction2(ticker, window_size=20, forecast_days=14):
     # IMPORTANT: dtype=np.float64 pour ne pas arrondir les scales
     X_scaled = np.zeros_like(X, dtype=np.float64)
 
+    # Boucle de scaling "Force Brute"
     for i in range(len(feature_cols)):
         feature_slice = X[:, :, i] 
-        # On force en (Total_points, 1) pour le scaler Scikit-Learn
-        flattened = feature_slice.reshape(-1, 1)
-        scaled_flattened = scalers_X[i].transform(flattened)
-        # On remet en (Nb_fenetres, Window_size)
-        X_scaled[:, :, i] = scaled_flattened.reshape(feature_slice.shape)
+        flattened = feature_slice.reshape(-1, 1) # (N, 1)
+        
+        # On crée une matrice fantôme de la taille attendue par ton scaler buggé (N, 365)
+        dummy_matrix = np.zeros((len(flattened), 365))
+        # On met tes vraies données dans la première colonne
+        dummy_matrix[:, 0] = flattened.flatten()
+        
+        # On transforme la matrice entière
+        scaled_dummy = scalers_X[i].transform(dummy_matrix)
+        
+        # On ne récupère que la première colonne transformée
+        scaled_data = scaled_dummy[:, 0]
+        
+        # On remet en forme
+        X_scaled[:, :, i] = scaled_data.reshape(feature_slice.shape)
 
     # 4️⃣ Prédiction
     # On prend la dernière fenêtre (la plus proche de la date de prédiction)
