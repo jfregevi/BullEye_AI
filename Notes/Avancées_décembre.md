@@ -1,19 +1,24 @@
-# Le problème principal évoqué lors de mes précédentes avancées étaient le choix d'un modèle efficace.
+# État d'avancement : Sélection et optimisation du modèle
 
-L'objectif de Décembre a donc été de comparer des modèles afin de sélectionner le plus optimal.
+Le problème principal évoqué lors de mes précédentes avancées étaient le choix d'un modèle efficace. L'objectif de Décembre a donc été de comparer des modèles afin de sélectionner le plus optimal.
 
-La méthode de comparaison est la suivante (voir le Notebook " :
+### Méthodologie de comparaison
 
-1- Fixer les variables nécessaires (données financières, taille des fenêtres, horizon de prédiction, etc) ;
-2- Entraîner plusieurs modèles ;
-3- Stocker la RMSE de chacun de ces modèles sur la BDD de test ;
-4- Comparer les RMSE de tous les modèles ;
-5- Sélectionner les 5 meilleurs ;
-6- Demander à Gemini de générer des modèles à ces 5 derniers ;
-7- Itérer le processus à partir du point 2.
+La méthode de comparaison est la suivante (voir le Notebook) :
 
-Pour le premier tour de test, il falalit sélectionner différents types classiques de modèles. Pour ce faire, je me suis renseigné sur les différentes familles de modèle.
-Vous trouverez le document issu de nombreux échanges avec Gemini pour génrer un prompt adapté à envoyer à Perplexity dans le sous-dossier documentation du dossier modèles.
+1. **Fixer les variables nécessaires** (données financières, taille des fenêtres, horizon de prédiction, etc.) ;
+2. **Entraîner** plusieurs modèles ;
+3. **Stocker la RMSE** de chacun de ces modèles sur la BDD de test ;
+4. **Comparer les RMSE** de tous les modèles ;
+5. **Sélectionner** les 5 meilleurs ;
+6. **Demander à Gemini** de générer des modèles à ces 5 derniers ;
+7. **Itérer** le processus à partir du point 2.
+
+Pour le premier tour de test, il fallait sélectionner différents types classiques de modèles. Pour ce faire, je me suis renseigné sur les différentes familles de modèle. Vous trouverez le document issu de nombreux échanges avec Gemini pour générer un prompt adapté à envoyer à Perplexity dans le sous-dossier *documentation* du dossier *modèles*.
+
+---
+
+### Architecture du modèle sélectionné
 
 Le modèle sectionné est donc :
 
@@ -39,7 +44,6 @@ def create_attention_tcn_gru():
     attn_out = Attention()([query, value])
     
     # Global Pooling pour réduire la dimension temporelle avant la sortie
-    # Cela permet de transformer la séquence (window_size, 128) en un vecteur fixe (128)
     avg_pool = GlobalAveragePooling1D()(attn_out)
     
     dense = Dense(32, activation='leaky_relu')(avg_pool)
@@ -52,10 +56,13 @@ def create_attention_tcn_gru():
 
 ```
 
-Pb recontré : dans tous mes essaies, je rescale les valeurs de X et de Y sur l'ensemble des données étudiées (même la partie test).
-Or en pratique, je ne pourrai pas utiliser des valeurs futures pour rescale, donc il se peut que mon modèle délire en voyant des valeurs plus grande dans le futur.
+---
 
-Autrement dit , ### 1. Pourquoi c'est de la "triche" sur ton graphique actuel
+### Problème rencontré : Le biais de normalisation (Data Leakage)
+
+Pb recontré : dans tous mes essaies, je rescale les valeurs de X et de Y sur l'ensemble des données étudiées (même la partie test). Or en pratique, je ne pourrai pas utiliser des valeurs futures pour rescale, donc il se peut que mon modèle délire en voyant des valeurs plus grande dans le futur.
+
+#### Pourquoi c'est de la "triche" sur ton graphique actuel :
 
 Dans ta Cellule 2, tu fais :
 
@@ -68,4 +75,4 @@ Dans ta Cellule 2, tu fais :
 * Si le point le plus haut de l'action était en 2024, ton scaler le sait déjà quand il normalise l'année 2018.
 * Ton graphique de test est "trop beau pour être vrai" car chaque point de test a été normalisé avec une connaissance globale de la période.
 
-Conclusion : cela démontre en problème intrinsèque à la volonté de travailler avec des valeurs de cours plutôt qu'avec des variations.
+> **Conclusion :** cela démontre en problème intrinsèque à la volonté de travailler avec des valeurs de cours plutôt qu'avec des variations.
