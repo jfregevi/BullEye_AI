@@ -60,17 +60,17 @@ def create_attention_tcn_gru():
 
 ### Problème rencontré : Le biais de normalisation (Data Leakage)
 
-Pb recontré : dans tous mes essaies, je rescale les valeurs de X et de Y sur l'ensemble des données étudiées (même la partie test). Or en pratique, je ne pourrai pas utiliser des valeurs futures pour rescale, donc il se peut que mon modèle délire en voyant des valeurs plus grande dans le futur.
+Pb recontré : dans tous mes essais, je rescale les valeurs de X et de Y sur l'ensemble des données étudiées (même la partie test). Or en pratique, je ne pourrai pas utiliser des valeurs futures pour rescale, donc il se peut que mon modèle délire en voyant des valeurs plus grande dans le futur.
 
-#### Pourquoi c'est de la "triche" sur ton graphique actuel :
+#### Pourquoi c'est de la "triche" sur mon graphique actuel :
 
-Dans ta Cellule 2, tu fais :
+Dans la Cellule 2, je fais :
 
 1. Téléchargement de 10 ans (ex: 2014 à 2024).
 2. `fit_transform` sur **toute** la période.
 3. Affichage du graphique sur les 5% derniers (le `X_test`).
 
-**Le problème :** Ton `X_test` (les données récentes) a été utilisé pour calculer le Min et le Max qui servent à normaliser ton `X_train` (le passé).
+**Le problème :** Le `X_test` (les données récentes) a été utilisé pour calculer le Min et le Max qui servent à normaliser ton `X_train` (le passé).
 
 * Si le point le plus haut de l'action était en 2024, ton scaler le sait déjà quand il normalise l'année 2018.
 * Ton graphique de test est "trop beau pour être vrai" car chaque point de test a été normalisé avec une connaissance globale de la période.
