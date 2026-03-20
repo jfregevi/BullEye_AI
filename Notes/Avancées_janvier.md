@@ -5,7 +5,7 @@
 * **Passage aux rendements :** Il est impératif de passer en **% de variation** plutôt qu'en valeurs de prix brutes. C'est mathématiquement plus robuste et plus parlant pour l'analyse.
 * **Adaptabilité du modèle :** Maintenant qu'un modèle performant a été identifié, il faudra valider s'il reste pertinent pour prédire des variations ou s'il doit être ajusté.
 
-## Évolution de l'objectif métier
+## Évolution de l'objectif de mon interface
 
 L'objectif de mon interface est d'indiquer à l'investisseur si le prix va **monter ou descendre**. La valeur exacte du prix importe peu en soi.
 
@@ -16,6 +16,8 @@ L'idée est de passer sur un modèle de **classification** qui prédit, par exem
 * **Classe 0 :** Hausse (> +2%)
 * **Classe 1 :** Baisse (> -2%)
 * **Classe 2 :** Stabilité (entre -2% et +2%)
+
+* En pratique, je vais commencer simplement avec deux classes : le prix monte et le prix descend. Le papier théorique rédigé en février sera basé là-dessus.
 
 
 
