@@ -1,0 +1,16 @@
+# Discussion avec Rony sur Linkedin
+
+## La raison de ma demande :
+
+Il semble très complexe d'arriver à entraîner un modèle performant uniquement avec des données passées (tous les indicateurs classiques sont en fait des données issues du passé qui n'ont donc à priori pas d'influence sur le présent).
+
+## Réponse de Rony :
+
+Cela semble cohérent ; selon lui, il faut des données en temps réel récupérée par exemple par un agent. Cela aurait plus de sens et donc plus de chance de fonctionner.
+
+En réalité, nous en avions déjà parlé plus tôt et ma conclusion ne l'a pas beaucoup etonné.
+
+
+# Conclusion
+
+Faire un compte rendu propre de tout ce que j'ai fait pour documenter tout le travail et montrer qu'avec un tel système il est peu probable d'arriver à des résultats concluants.
