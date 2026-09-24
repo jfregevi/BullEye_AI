@@ -2,18 +2,18 @@
 
 Research project conducted as part of the **Défi G1G2** academic track at **École Centrale de Lille** (2025–2026).
 
-This repository investigates whether Deep Learning can augment a traditional Dollar-Cost Averaging (DCA) strategy by timing market entries on equities and crypto (SPY, QQQ, BTC). It documents the full quantitative pipeline: mathematical foundations, a benchmark of 20 architectures, bias identification, and a transition to dynamic volatility classification.
+This repository investigates whether Deep Learning can augment a traditional Dollar-Cost Averaging (DCA) strategy by timing market entries on equities and crypto (SPY, QQQ, BTC). It documents the full quantitative journey: mathematical foundations, a benchmark of 20 architectures, the discovery of predictive limitations, and a pragmatic transition to volatility-based classification.
 
 📄 **Full 58-page thesis available in the repo:** [`final_report_french.pdf`](./final_report_french.pdf) *(in French)*.
 
 ---
 
-## ⚡ Key Findings
+## ⚡ Key Takeaways & Lessons Learned
 
-1. **Theoretical DCA Invariance:** The relative timing outperformance ($\eta$) is mathematically independent of the invested capital ($M$). Alpha depends strictly on price oscillation density and is asymptotically diluted over time by accumulated portfolio size.
-2. **The Multi-Step Lag Fallacy:** Moving from $H=1$ to $H=14$ days causes regression models to collapse into a naive lagging indicator ($y_{t+H} \approx y_t$). Without live exogenous data, historical price series alone cannot forecast medium-term turns.
-3. **Dynamic Triple-Barrier Pivot:** Reformulating the objective into 3 volatility-adjusted regimes (`BUY`, `HOLD`, `SELL`) with 17 stationary features (momentum, oscillators, intraday candle metrics, VIX, TNX, Fear & Greed).
-4. **Calibrated Inertia (ATG):** The hybrid **Attention + TCN + BiGRU** network delivered the best probability calibration. Under strict confidence filtering ($\tau > 0.55$), the model achieves **83.3% precision on the `HOLD` class**, acting as an efficient market noise filter.
+1. **The DCA Augmented Theory:** Mathematically, an "AI-boosted DCA" only significantly outperforms in highly volatile or ranging markets. In a strong, steady bull market, the AI simply mimics a standard DCA strategy because there are no price drops to exploit.
+2. **The Illusion of Regression:** Predicting prices 1 day ahead ($H=1$) looks incredibly accurate, but it's an illusion. When extending the horizon ($H=7$ or $H=14$), the model stops anticipating and simply becomes a lagging indicator, reacting to the market rather than predicting it.
+3. **Pivot to Classification:** To counter this, the problem was reframed into predicting market regimes (`BUY`, `HOLD`, `SELL`) using a dynamic barrier adjusted to the asset's 20-day rolling volatility.
+4. **Final Verdict & Reality Check:** The best-performing model (an ensemble of Attention, TCN, and BiGRU) proved very effective at predicting market inertia (83.3% precision on the `HOLD` class) but struggled to reliably catch major reversals. Ultimately, the project highlighted that pure historical price data is insufficient to consistently beat the market, and traditional DCA remains an incredibly robust strategy.
 
 ---
 
@@ -22,7 +22,7 @@ This repository investigates whether Deep Learning can augment a traditional Dol
 * **[`notebooks/`](./notebooks/)** — Complete experimental pipeline:
   * `baseline.ipynb` — Initial regression baseline.
   * `model_selection_benchmark.ipynb` — 20-architecture benchmark on price regression.
-  * `horizon_robustness_test.ipynb` — Multi-step degradation ($H \in \{1, 3, 7, 10, 14\}$).
+  * `horizon_robustness_test.ipynb` — Multi-step degradation tests ($H \in \{1, 3, 7, 10, 14\}$).
   * `classification.ipynb` — Initial Triple-Barrier labeling and direction prediction.
   * `classification_v2.ipynb` — Dynamic volatility barrier tuning ($\lambda = 1.0, H = 3$).
   * `test_svm_model.ipynb` — Baseline classification using Support Vector Machines.
@@ -40,7 +40,7 @@ This repository investigates whether Deep Learning can augment a traditional Dol
 
 * **Language & Frameworks:** Python, TensorFlow / Keras, Scikit-Learn
 * **Data Sources:** `yfinance` (SPY, QQQ, BTC-USD, VIX, TNX), CNN Fear & Greed Index
-* **Core Architectures:** Dilated Causal TCN, Bidirectional GRU, Self-Attention
+* **Core Architectures Tested:** Dense, SimpleRNN, LSTM, GRU, Conv1D, Dilated Causal TCN, Bidirectional GRU, Self-Attention
 
 ---
 
