@@ -12,7 +12,7 @@ This repository investigates whether Deep Learning can augment a traditional Dol
 
 1. **The DCA Augmented Theory:** Mathematically, an "AI-boosted DCA" only significantly outperforms in highly volatile or ranging markets. In a strong, steady bull market, the AI simply mimics a standard DCA strategy because there are no price drops to exploit.
 2. **The Illusion of Regression:** Predicting prices 1 day ahead ($H=1$) looks incredibly accurate, but it's an illusion. When extending the horizon ($H=7$ or $H=14$), the model stops anticipating and simply becomes a lagging indicator, reacting to the market rather than predicting it.
-3. **Pivot to Classification:** To counter this, the problem was reframed into predicting market regimes (`BUY`, `HOLD`, `SELL`) using a dynamic barrier adjusted to the asset's 20-day rolling volatility.
+3. **Pivot to Classification:** To counter this, I switched to predicting market regimes (`BUY`, `HOLD`, `SELL`) using a dynamic barrier adjusted to the asset's 20-day rolling volatility.
 4. **Final Verdict & Reality Check:** The best-performing model (an ensemble of Attention, TCN, and BiGRU) proved very effective at predicting market inertia (83.3% precision on the `HOLD` class) but struggled to reliably catch major reversals. Ultimately, the project highlighted that pure historical price data is insufficient to consistently beat the market, and traditional DCA remains an incredibly robust strategy.
 
 ---
